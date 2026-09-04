@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from rich.text import Text
 from typer.testing import CliRunner
 
 from p2g.cli import _stopped_process_specs, app
@@ -15,11 +16,24 @@ from p2g.errors import ContractError
 ROOT = Path(__file__).parents[1]
 
 
+def _help_output(
+    runner: CliRunner,
+    *command: str,
+    terminal_width: int | None = None,
+) -> str:
+    arguments = [*command, "--help"]
+    if terminal_width is None:
+        result = runner.invoke(app, arguments)
+    else:
+        result = runner.invoke(app, arguments, terminal_width=terminal_width)
+    assert result.exit_code == 0, result.output
+    return Text.from_ansi(result.output).plain
+
+
 def test_public_cli_exposes_only_the_supported_stage_and_auxiliary_commands() -> None:
     runner = CliRunner()
-    result = runner.invoke(app, ["--help"])
+    output = _help_output(runner)
 
-    assert result.exit_code == 0, result.output
     for command in (
         "doctor",
         "run",
@@ -37,78 +51,64 @@ def test_public_cli_exposes_only_the_supported_stage_and_auxiliary_commands() ->
         "data",
         "fixture",
     ):
-        assert command in result.output
+        assert command in output
     for hidden_command in ("debug-only", "experimental-compat", "legacy-run"):
-        assert hidden_command not in result.output.casefold()
+        assert hidden_command not in output.casefold()
 
-    asset = runner.invoke(app, ["asset", "--help"])
-    assert asset.exit_code == 0, asset.output
-    assert "export" in asset.output
-    assert "inspect" in asset.output
-    assert "verify" in asset.output
+    asset = _help_output(runner, "asset")
+    assert "export" in asset
+    assert "inspect" in asset
+    assert "verify" in asset
 
-    fixture = runner.invoke(app, ["fixture", "--help"])
-    assert fixture.exit_code == 0, fixture.output
-    assert "create" in fixture.output
+    fixture = _help_output(runner, "fixture")
+    assert "create" in fixture
 
-    data = runner.invoke(app, ["data", "--help"])
-    assert data.exit_code == 0, data.output
-    assert "import-charge" in data.output
-    assert "import-selfcap" in data.output
+    data = _help_output(runner, "data")
+    assert "import-charge" in data
+    assert "import-selfcap" in data
 
-    camera_path = runner.invoke(app, ["camera-path", "--help"])
-    assert camera_path.exit_code == 0, camera_path.output
-    assert "bind" in camera_path.output
+    camera_path = _help_output(runner, "camera-path")
+    assert "bind" in camera_path
 
-    camera_bind = runner.invoke(app, ["camera-path", "bind", "--help"], terminal_width=180)
-    assert camera_bind.exit_code == 0, camera_bind.output
-    assert "--trajectory" in camera_bind.output
-    assert "--output" in camera_bind.output
+    camera_bind = _help_output(runner, "camera-path", "bind", terminal_width=180)
+    assert "--trajectory" in camera_bind
+    assert "--output" in camera_bind
 
-    charge = runner.invoke(app, ["data", "import-charge", "--help"], terminal_width=180)
-    assert charge.exit_code == 0, charge.output
-    assert "--source-revision" in charge.output
-    assert "--sealed-camera-count" in charge.output
+    charge = _help_output(runner, "data", "import-charge", terminal_width=180)
+    assert "--source-revision" in charge
+    assert "--sealed-camera-count" in charge
 
-    selfcap = runner.invoke(app, ["data", "import-selfcap", "--help"], terminal_width=180)
-    assert selfcap.exit_code == 0, selfcap.output
-    assert "--source-start-frame" in selfcap.output
-    assert "--diagnostic-camera" in selfcap.output
-    assert "--sealed-camera" in selfcap.output
+    selfcap = _help_output(runner, "data", "import-selfcap", terminal_width=180)
+    assert "--source-start-frame" in selfcap
+    assert "--diagnostic-camera" in selfcap
+    assert "--sealed-camera" in selfcap
 
-    pipeline = runner.invoke(app, ["run", "--help"], terminal_width=180)
-    assert pipeline.exit_code == 0, pipeline.output
-    assert "--workspace" in pipeline.output
-    assert "--stop-after" in pipeline.output
+    pipeline = _help_output(runner, "run", terminal_width=180)
+    assert "--workspace" in pipeline
+    assert "--stop-after" in pipeline
 
-    doctor = runner.invoke(app, ["doctor", "--help"], terminal_width=240)
-    assert doctor.exit_code == 0, doctor.output
-    assert "--admission-mode" in doctor.output
-    assert "--allow-stopped-proce" in doctor.output
+    doctor = _help_output(runner, "doctor", terminal_width=240)
+    assert "--admission-mode" in doctor
+    assert "--allow-stopped-proce" in doctor
 
-    propose = runner.invoke(app, ["propose", "--help"], terminal_width=180)
-    assert propose.exit_code == 0, propose.output
-    assert "--observation-manife" in propose.output
+    propose = _help_output(runner, "propose", terminal_width=180)
+    assert "--observation-manife" in propose
 
-    train = runner.invoke(app, ["train", "--help"], terminal_width=180)
-    assert train.exit_code == 0, train.output
-    assert "--resume-checkpoint" in train.output
+    train = _help_output(runner, "train", terminal_width=180)
+    assert "--resume-checkpoint" in train
 
-    sealed = runner.invoke(app, ["evaluate-sealed", "--help"], terminal_width=180)
-    assert sealed.exit_code == 0, sealed.output
-    assert "--gate" in sealed.output
-    assert "--output" in sealed.output
+    sealed = _help_output(runner, "evaluate-sealed", terminal_width=180)
+    assert "--gate" in sealed
+    assert "--output" in sealed
 
-    sealed_verify = runner.invoke(app, ["verify-sealed", "--help"], terminal_width=180)
-    assert sealed_verify.exit_code == 0, sealed_verify.output
-    assert "--run-dir" in sealed_verify.output
-    assert "--gate" in sealed_verify.output
-    assert "--expected-receipt-id" in sealed_verify.output
+    sealed_verify = _help_output(runner, "verify-sealed", terminal_width=180)
+    assert "--run-dir" in sealed_verify
+    assert "--gate" in sealed_verify
+    assert "--expected-receipt-id" in sealed_verify
 
-    asset_export = runner.invoke(app, ["asset", "export", "--help"], terminal_width=180)
-    assert asset_export.exit_code == 0, asset_export.output
-    assert "--producer-git-revis" in asset_export.output
-    assert "--redistribution" in asset_export.output
+    asset_export = _help_output(runner, "asset", "export", terminal_width=180)
+    assert "--producer-git-revis" in asset_export
+    assert "--redistribution" in asset_export
 
 
 def test_module_help_is_lazy_and_does_not_import_torch() -> None:
