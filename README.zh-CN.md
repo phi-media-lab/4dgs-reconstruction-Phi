@@ -110,14 +110,11 @@ spherical-harmonic appearance、中心时间、有界持续时间、可选的 le
 persistence，以及稳定运行时身份。在查询时间 $t$：
 
 $$
-\boldsymbol{\mu}_i(t) = \boldsymbol{\mu}_i
-  + \boldsymbol{v}_i(t-c_i)
+\boldsymbol{\mu}_i(t)=\boldsymbol{\mu}_i+\boldsymbol{v}_i(t-c_i)
 $$
 
 $$
-g_i(t)=\exp\left[-\frac{1}{2}
-  \left(\frac{t-c_i}{\sigma_i}\right)^2\right], \qquad
-a_i(t)=p_i+(1-p_i)g_i(t)
+g_i(t)=\exp\left[-\frac{1}{2}\left(\frac{t-c_i}{\sigma_i}\right)^2\right],\qquad a_i(t)=p_i+(1-p_i)g_i(t)
 $$
 
 $$

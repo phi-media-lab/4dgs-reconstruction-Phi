@@ -207,6 +207,11 @@ def test_bilingual_readmes_cross_link_and_use_portable_math() -> None:
     assert "[English](README.md)" in chinese
     for readme in (english, chinese):
         assert r"\operatorname" not in readme
+        assert (
+            r"\boldsymbol{\mu}_i(t)=\boldsymbol{\mu}_i+\boldsymbol{v}_i(t-c_i)"
+            in readme
+        )
+        assert "\n  + \\boldsymbol" not in readme
         assert r"\frac{a_i(t)}{1+\exp(-o_i)}" in readme
 
 
