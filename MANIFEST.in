@@ -1,0 +1,9 @@
+include CHANGELOG.md CITATION.cff CONTRIBUTING.md LICENSE NOTICE README.md SECURITY.md THIRD_PARTY_NOTICES.md
+include sbom.cdx.json
+graft docs
+graft examples
+graft src
+graft tests
+graft third_party
+graft tools
+global-exclude __pycache__ *.py[cod]

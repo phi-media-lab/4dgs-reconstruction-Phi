@@ -1,0 +1,81 @@
+{
+  "schema_version": "p2g.lpips_alex_provider_registry.v1",
+  "provider": {
+    "distribution": "torchmetrics",
+    "distribution_version": "1.9.0",
+    "factory": "torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity",
+    "repository": "https://github.com/Lightning-AI/torchmetrics",
+    "release": "v1.9.0",
+    "license": {
+      "spdx": "Apache-2.0",
+      "url": "https://github.com/Lightning-AI/torchmetrics/blob/v1.9.0/LICENSE",
+      "path": "torchmetrics-1.9.0.dist-info/licenses/LICENSE",
+      "bytes": 11352,
+      "sha256": "fa31f433f5b4bc1fb730fb9c678f90182d93bf76b6d98ba4d00f40454ac8b832"
+    },
+    "distribution_artifacts": {
+      "wheel_sha256": "bfdcbff3dd1d96b3374bb2496eb39f23c4b28b8a845b6a18c313688e0d2d9ca1",
+      "sdist_sha256": "a488609948600df52d3db4fcdab02e62aab2a85ef34da67037dc3e65b8512faa"
+    },
+    "files": {
+      "metric": {
+        "path": "torchmetrics/image/lpip.py",
+        "bytes": 8460,
+        "sha256": "7b35808c580639826383529924fe9d18f797b02ba62ea5707ce5b1d19d904429"
+      },
+      "functional": {
+        "path": "torchmetrics/functional/image/lpips.py",
+        "bytes": 17630,
+        "sha256": "b647ed2ab4d466228931ccd70fa1ef51de61dd9b7cfc308ebdb28e3d4bada88a"
+      },
+      "linear_weights": {
+        "path": "torchmetrics/functional/image/lpips_models/alex.pth",
+        "bytes": 6009,
+        "sha256": "df73285e35b22355a2df87cdb6b70b343713b667eddbda73e1977e0c860835c0"
+      }
+    }
+  },
+  "runtime": {
+    "python": "3.12",
+    "torch": "2.10.0+rocm7.0",
+    "torchvision": "0.25.0+rocm7.0",
+    "torchvision_files": {
+      "alexnet": {
+        "path": "torchvision/models/alexnet.py",
+        "bytes": 4488,
+        "sha256": "76f0592d51fad133931c234d9168344c52edb89e46861ff15cdef7af7572ab9f"
+      },
+      "license": {
+        "path": "torchvision-0.25.0+rocm7.0.dist-info/LICENSE",
+        "bytes": 1517,
+        "sha256": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+      }
+    }
+  },
+  "external_weights": {
+    "alexnet_features": {
+      "filename": "alexnet-owt-7be5be79.pth",
+      "url": "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth",
+      "bytes": 244408911,
+      "sha256": "7be5be791159472b1fbf3c69796f7cb30dca7ad8466c2df70058c37116cdee02",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "review_required",
+        "url": "https://docs.pytorch.org/vision/0.25/models/generated/torchvision.models.alexnet.html"
+      },
+      "redistribution": "external_only_not_bundled"
+    }
+  },
+  "metric": {
+    "net_type": "alex",
+    "reduction": "mean",
+    "normalize": false,
+    "input_contract": "clamp_rgb_unit_range_then_nchw_view_with_normalize_false_v1"
+  },
+  "policy": {
+    "automatic_download": false,
+    "bundle_weights": false,
+    "require_local_hash_match": true,
+    "record_provider_identity": true
+  }
+}

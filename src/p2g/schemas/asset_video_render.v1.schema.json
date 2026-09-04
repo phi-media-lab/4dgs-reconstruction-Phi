@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.dev/schemas/asset_video_render.v1.schema.json",
+  "title": "Pixel4DGS AssetBundle video render receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "asset_bundle_id",
+    "model_sha256",
+    "camera_path_sha256",
+    "frame_count",
+    "fps",
+    "duration_seconds",
+    "render_resolution",
+    "encoded_resolution",
+    "sh_degree",
+    "phase_ms",
+    "render_ms",
+    "runtime",
+    "consumer",
+    "encoder",
+    "rights",
+    "video"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.asset_video_render.v1"},
+    "status": {"const": "PASS"},
+    "asset_bundle_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "camera_path_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "frame_count": {"type": "integer", "minimum": 2},
+    "fps": {"type": "integer", "minimum": 1, "maximum": 240},
+    "duration_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "render_resolution": {"$ref": "#/$defs/resolution"},
+    "encoded_resolution": {"$ref": "#/$defs/resolution"},
+    "sh_degree": {"type": "integer", "minimum": 0, "maximum": 3},
+    "phase_ms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_load", "model_to_device", "frame_pipeline", "encode"],
+      "properties": {
+        "asset_load": {"type": "number", "minimum": 0},
+        "model_to_device": {"type": "number", "minimum": 0},
+        "frame_pipeline": {"type": "number", "minimum": 0},
+        "encode": {"type": "number", "minimum": 0}
+      }
+    },
+    "render_ms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mean", "median", "p95"],
+      "properties": {
+        "mean": {"type": "number", "minimum": 0},
+        "median": {"type": "number", "minimum": 0},
+        "p95": {"type": "number", "minimum": 0}
+      }
+    },
+    "peak_memory_bytes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allocated", "reserved"],
+      "properties": {
+        "allocated": {"type": "integer", "minimum": 0},
+        "reserved": {"type": "integer", "minimum": 0}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "torch",
+        "hip",
+        "gsplat_distribution",
+        "gsplat_module",
+        "safetensors",
+        "imageio",
+        "device",
+        "architecture",
+        "backend"
+      ],
+      "properties": {
+        "torch": {"type": "string", "minLength": 1},
+        "hip": {"type": "string", "minLength": 1},
+        "gsplat_distribution": {"type": "string", "minLength": 1},
+        "gsplat_module": {"type": "string", "minLength": 1},
+        "gsplat_distribution_name": {"const": "amd-gsplat"},
+        "gsplat_source_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "renderer_abi": {"const": "p2g.gsplat_rocm.v1"},
+        "python_abi": {"const": "cp312"},
+        "visible_device_count": {"const": 1},
+        "safetensors": {"type": "string", "minLength": 1},
+        "imageio": {"type": "string", "minLength": 1},
+        "device": {"type": "string", "minLength": 1},
+        "architecture": {"type": "string", "minLength": 1},
+        "backend": {"const": "gsplat_rocm"}
+      }
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "renderer_abi", "implementation_sha256"],
+      "properties": {
+        "name": {"const": "pixel4dgs"},
+        "version": {"type": "string", "minLength": 1},
+        "renderer_abi": {"const": "p2g.asset_video_renderer.v1"},
+        "implementation_sha256": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset",
+            "asset_render",
+            "config",
+            "dataset",
+            "evaluate",
+            "model",
+            "renderer"
+          ],
+          "properties": {
+            "asset": {"$ref": "#/$defs/sha256"},
+            "asset_render": {"$ref": "#/$defs/sha256"},
+            "config": {"$ref": "#/$defs/sha256"},
+            "dataset": {"$ref": "#/$defs/sha256"},
+            "evaluate": {"$ref": "#/$defs/sha256"},
+            "model": {"$ref": "#/$defs/sha256"},
+            "renderer": {"$ref": "#/$defs/sha256"}
+          }
+        }
+      }
+    },
+    "encoder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ffmpeg_version", "codec", "pixel_format", "verified_frame_count"],
+      "properties": {
+        "ffmpeg_version": {"type": "string", "minLength": 1},
+        "codec": {"const": "h264"},
+        "pixel_format": {"const": "yuv420p"},
+        "verified_frame_count": {"type": "integer", "minimum": 2}
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["redistribution"],
+      "properties": {
+        "redistribution": {"enum": ["allowed", "restricted", "review_required"]}
+      }
+    },
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "bytes", "sha256"],
+      "properties": {
+        "file": {"type": "string", "pattern": "^[^/\\\\]+\\.mp4$"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "resolution": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 1},
+        {"type": "integer", "minimum": 1}
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

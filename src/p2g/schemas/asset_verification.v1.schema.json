@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/asset_verification.v1.schema.json",
+  "title": "Pixel4DGS AssetBundle verification receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "asset",
+    "files",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.asset_verification.v1"},
+    "status": {"const": "PASS"},
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "bundle_id",
+        "gaussian_count",
+        "tensor_count",
+        "model_sha256",
+        "equation_version",
+        "redistribution"
+      ],
+      "properties": {
+        "schema_version": {"const": "p2g.asset_bundle.v1"},
+        "bundle_id": {"$ref": "#/$defs/sha256"},
+        "gaussian_count": {"type": "integer", "minimum": 1},
+        "tensor_count": {"type": "integer", "minimum": 1},
+        "model_sha256": {"$ref": "#/$defs/sha256"},
+        "equation_version": {"type": "string", "minLength": 1},
+        "redistribution": {"enum": ["allowed", "restricted", "review_required"]}
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest.json", "asset.json", "model.safetensors"],
+      "properties": {
+        "manifest.json": {"$ref": "#/$defs/sha256"},
+        "asset.json": {"$ref": "#/$defs/sha256"},
+        "model.safetensors": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

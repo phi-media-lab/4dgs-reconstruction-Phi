@@ -1,0 +1,12 @@
+--- a/setup.py
++++ b/setup.py
+@@ -148,3 +148,8 @@
+-if is_git_repo:
++build_revision = os.getenv("AMD_GSPLAT_BUILD_REVISION")
++if build_revision:
++    if not re.fullmatch(r"[0-9a-f]{40}", build_revision):
++        raise ValueError("AMD_GSPLAT_BUILD_REVISION must be a full lowercase Git hash")
++    __version__ += f"+{build_revision}"
++elif is_git_repo(os.getcwd()):
+     git_rev = get_git_rev(os.getcwd())
+     __version__ += f"+{git_rev}"

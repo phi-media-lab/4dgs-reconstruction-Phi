@@ -1,0 +1,50 @@
+name: CPU source and package checks
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CUDA_VISIBLE_DEVICES: "-1"
+  HIP_VISIBLE_DEVICES: "-1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  ROCR_VISIBLE_DEVICES: "-1"
+
+jobs:
+  source-contracts:
+    name: Source contracts (CPython 3.12, CPU only)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the reviewed tree
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up CPython
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          cache: pip
+          cache-dependency-path: |
+            .github/workflows/cpu-ci.yml
+            pyproject.toml
+          python-version: "3.12"
+      - name: Install the explicit CPU test stack
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e ".[dev]"
+      - name: Confirm the CPU-only boundary
+        run: |
+          python -c 'import os, torch; assert os.environ["HIP_VISIBLE_DEVICES"] == "-1"; assert os.environ["ROCR_VISIBLE_DEVICES"] == "-1"; assert os.environ["CUDA_VISIBLE_DEVICES"] == "-1"; assert not torch.cuda.is_available()'
+      - name: Verify the tracked public source boundary
+        run: python tools/release/check_tracked_source.py --root .
+      - name: Lint
+        run: ruff check .
+      - name: Type-check
+        run: pyright
+      - name: Run the complete CPU suite
+        run: python -m pytest -q

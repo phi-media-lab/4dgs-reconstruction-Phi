@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/observation_manifest.v2.json",
+  "title": "Pixel4DGS observation manifest v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "source",
+    "coordinate_conventions",
+    "sync",
+    "transforms",
+    "observations"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.observation_manifest.v2"},
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "license", "license_status", "root_sha256"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "license": {"type": ["string", "null"]},
+        "license_status": {
+          "enum": ["declared", "restricted", "unknown", "verification_required"]
+        },
+        "root_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "coordinate_conventions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handedness",
+        "extrinsic",
+        "pixel_center",
+        "time_unit",
+        "photometric_space"
+      ],
+      "properties": {
+        "handedness": {"const": "right"},
+        "extrinsic": {"const": "world_to_camera"},
+        "pixel_center": {"const": "half_pixel"},
+        "time_unit": {"const": "seconds"},
+        "photometric_space": {"enum": ["linear_rgb", "srgb_reference_profile"]}
+      }
+    },
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variant", "tolerance_seconds"],
+      "properties": {
+        "variant": {"type": "string", "minLength": 1, "maxLength": 128},
+        "tolerance_seconds": {"type": "number", "minimum": 0},
+        "per_camera_offset_seconds": {
+          "type": "object",
+          "additionalProperties": {"type": "number"}
+        }
+      }
+    },
+    "transforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "config_sha256"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "config_sha256": {"$ref": "#/$defs/sha256"},
+          "implementation_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/observation"}
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "matrix3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": {"type": "number"}
+      }
+    },
+    "matrix4": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 4,
+        "maxItems": 4,
+        "items": {"type": "number"}
+      }
+    },
+    "encoding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "container",
+        "channel_order",
+        "bit_depth",
+        "stored_range",
+        "declared_transfer",
+        "declared_primaries",
+        "declared_matrix",
+        "canonical_decode_profile"
+      ],
+      "properties": {
+        "container": {"enum": ["png", "jpeg", "other"]},
+        "channel_order": {"enum": ["RGB", "RGBA", "L", "LA", "unknown"]},
+        "bit_depth": {"type": ["integer", "null"], "minimum": 1, "maximum": 32},
+        "stored_range": {"enum": ["full", "limited", "unknown"]},
+        "declared_transfer": {"type": ["string", "null"]},
+        "declared_primaries": {"type": ["string", "null"]},
+        "declared_matrix": {"type": ["string", "null"]},
+        "canonical_decode_profile": {
+          "enum": [
+            "linear_passthrough_v1",
+            "srgb_eotf_v1",
+            "srgb_reference_assumption_v1",
+            "unspecified_v1"
+          ]
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "camera_id",
+        "frame_id",
+        "timestamp_seconds",
+        "role",
+        "image",
+        "camera"
+      ],
+      "properties": {
+        "observation_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "camera_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "frame_id": {"type": "integer", "minimum": 0},
+        "timestamp_seconds": {"type": "number"},
+        "role": {"enum": ["train", "diagnostic", "sealed", "free_view"]},
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256",
+            "width",
+            "height",
+            "color_space",
+            "encoding"
+          ],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "width": {"type": "integer", "minimum": 1},
+            "height": {"type": "integer", "minimum": 1},
+            "color_space": {"enum": ["srgb_encoded", "linear_rgb", "unknown"]},
+            "encoding": {"$ref": "#/$defs/encoding"},
+            "exposure_seconds": {"type": ["number", "null"], "exclusiveMinimum": 0},
+            "iso": {"type": ["number", "null"], "exclusiveMinimum": 0}
+          }
+        },
+        "camera": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "pixel_domain",
+            "intrinsic",
+            "world_to_camera",
+            "distortion"
+          ],
+          "properties": {
+            "model": {"enum": ["pinhole", "opencv_radtan"]},
+            "pixel_domain": {"enum": ["distorted", "undistorted"]},
+            "intrinsic": {"$ref": "#/$defs/matrix3"},
+            "world_to_camera": {"$ref": "#/$defs/matrix4"},
+            "distortion": {
+              "type": "array",
+              "maxItems": 14,
+              "items": {"type": "number"}
+            }
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"model": {"const": "pinhole"}}},
+              "then": {"properties": {"distortion": {"maxItems": 0}}}
+            },
+            {
+              "if": {"properties": {"model": {"const": "opencv_radtan"}}},
+              "then": {"properties": {"distortion": {"minItems": 4, "maxItems": 5}}}
+            },
+            {
+              "if": {"properties": {"pixel_domain": {"const": "distorted"}}},
+              "then": {"properties": {"model": {"const": "opencv_radtan"}}}
+            }
+          ]
+        }
+      }
+    }
+  }
+}

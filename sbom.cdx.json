@@ -1,0 +1,255 @@
+{
+  "$schema": "https://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:pypi/pixel4dgs@0.1.0.dev0",
+      "name": "pixel4dgs",
+      "version": "0.1.0.dev0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "dependency:imageio",
+      "name": "imageio",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=2.37,<3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:jsonschema",
+      "name": "jsonschema",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=4.25,<5"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:numpy",
+      "name": "numpy",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=2,<3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:pillow",
+      "name": "Pillow",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=12,<13"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:pyarrow",
+      "name": "pyarrow",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=21,<22"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:rich",
+      "name": "rich",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=14,<15"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:safetensors",
+      "name": "safetensors",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=0.6,<1"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:scipy",
+      "name": "scipy",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=1.18,<2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:typer",
+      "name": "typer",
+      "properties": [
+        {
+          "name": "pixel4dgs:declared-requirement",
+          "value": ">=0.16,<1"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "dependency:opencv-python-headless",
+      "name": "opencv-python-headless",
+      "version": "5.0.0.93",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "pixel4dgs:dependency-profile",
+          "value": "selfcap"
+        }
+      ]
+    },
+    {
+      "type": "framework",
+      "bom-ref": "runtime:torch-rocm",
+      "name": "torch",
+      "version": "2.10.0+rocm7.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "pixel4dgs:distribution-mode",
+          "value": "external MI300X runtime; not resolved by project metadata"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "runtime:torchvision-rocm",
+      "name": "torchvision",
+      "version": "0.25.0+rocm7.0",
+      "scope": "optional",
+      "properties": [
+        {
+          "name": "pixel4dgs:dependency-profile",
+          "value": "RoMa and LPIPS providers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "runtime:romatch",
+      "name": "romatch",
+      "version": "0.1.2",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "runtime:torchmetrics",
+      "name": "torchmetrics",
+      "version": "1.9.0",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "runtime:amd-gsplat-b01acd43",
+      "name": "AMD Ecosystem gsplat",
+      "version": "b01acd43e3c7fa942f95fda0974e9125e4de7395",
+      "scope": "required",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "build:glm-33b4a621",
+      "name": "OpenGL Mathematics (GLM)",
+      "version": "33b4a621a697a305bc3a7610d290677b96beb181",
+      "scope": "required",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:pypi/pixel4dgs@0.1.0.dev0",
+      "dependsOn": [
+        "build:glm-33b4a621",
+        "dependency:imageio",
+        "dependency:jsonschema",
+        "dependency:numpy",
+        "dependency:pillow",
+        "dependency:pyarrow",
+        "dependency:rich",
+        "dependency:safetensors",
+        "dependency:scipy",
+        "dependency:typer",
+        "runtime:amd-gsplat-b01acd43",
+        "runtime:torch-rocm"
+      ]
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "pkg:pypi/pixel4dgs@0.1.0.dev0"
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "pixel4dgs:composition-note",
+      "value": "Pre-build source SBOM: resolved transitive packages, system ROCm components, external weights, input data, and generated artifacts are intentionally outside this composition."
+    }
+  ]
+}

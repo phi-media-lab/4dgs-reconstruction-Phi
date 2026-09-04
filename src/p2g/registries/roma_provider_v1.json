@@ -1,0 +1,58 @@
+{
+  "schema_version": "p2g.roma_provider_registry.v1",
+  "provider": {
+    "distribution": "romatch",
+    "distribution_version": "0.1.2",
+    "factory": "romatch.roma_indoor",
+    "repository": "https://github.com/Parskatt/RoMa.git",
+    "revision": "77f8d68803526dcddfd9b7a46bc76125bdc25f15",
+    "license": {
+      "spdx": "MIT",
+      "copyright": "Copyright (c) 2023 Johan Edstedt",
+      "url": "https://github.com/Parskatt/RoMa/blob/77f8d68803526dcddfd9b7a46bc76125bdc25f15/LICENSE",
+      "sha256": "6f02ad61c3fd4509343d619b55501354bcebfd67ad5460c853d02c7ab46ff4bd"
+    }
+  },
+  "runtime": {
+    "operating_system": "Linux x86_64",
+    "python": "3.12",
+    "torch": "2.10.0+rocm7.0",
+    "torchvision": "0.25.0+rocm7.0",
+    "hip": "7.0.51831",
+    "architecture": "gfx942",
+    "visible_device_count": 1,
+    "torch_index": "https://download.pytorch.org/whl/rocm7.0"
+  },
+  "weights": {
+    "roma_indoor": {
+      "filename": "roma_indoor.pth",
+      "url": "https://github.com/Parskatt/storage/releases/download/roma/roma_indoor.pth",
+      "bytes": 445646911,
+      "sha256": "4d3dca889ae1ef245123dc62aab914475c7bbf41f2c8002606450fb6cf2d91e6",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "review_required",
+        "url": "https://github.com/Parskatt/storage/releases/tag/roma"
+      },
+      "redistribution": "external_only_not_bundled"
+    },
+    "dinov2_vitl14": {
+      "filename": "dinov2_vitl14_pretrain.pth",
+      "url": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_pretrain.pth",
+      "bytes": 1217586395,
+      "sha256": "d5383ea8f4877b2472eb973e0fd72d557c7da5d3611bd527ceeb1d7162cbf428",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "declared",
+        "url": "https://github.com/facebookresearch/dinov2/blob/main/LICENSE"
+      },
+      "redistribution": "external_only_not_bundled"
+    }
+  },
+  "policy": {
+    "automatic_download": false,
+    "bundle_weights": false,
+    "require_local_hash_match": true,
+    "record_environment_lock": true
+  }
+}

@@ -1,0 +1,19 @@
+--- a/setup.py
++++ b/setup.py
+@@ -224,10 +224,12 @@
+         extra_compile_args["nvcc"] = hipcc_flags
+         current_dir = pathlib.Path(__file__).parent.resolve()
+-
++        glm_include = os.getenv("AMD_GSPLAT_GLM_INCLUDE")
++        if not glm_include or not osp.isfile(osp.join(glm_include, "glm", "glm.hpp")):
++            raise ValueError(
++                "AMD_GSPLAT_GLM_INCLUDE must name the root of a pinned external GLM tree"
++            )
+         include_dirs = [
+             osp.join(current_dir, "gsplat", "cuda", "include"),
+-            f"{os.environ['HOME']}/.local/include",
+-            f"/opt/conda/include",
+-            f"/opt/conda/envs/py_3.12/lib/python3.12/site-packages/",
++            glm_include,
+             f"/opt/rocm/include",
+         ]

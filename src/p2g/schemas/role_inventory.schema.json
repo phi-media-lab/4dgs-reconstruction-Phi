@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/role_inventory.v1.json",
+  "title": "Pixel4DGS role inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "protocol_sha256",
+    "roles",
+    "policy",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.role_inventory.v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "protocol_sha256": {"$ref": "#/$defs/sha256"},
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "diagnostic", "sealed"],
+      "properties": {
+        "train": {"$ref": "#/$defs/role"},
+        "diagnostic": {"$ref": "#/$defs/role"},
+        "sealed": {"$ref": "#/$defs/role"},
+        "free_view": {"$ref": "#/$defs/role"}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "train_only_for_sampling_matching_normalization_allocation_optimization",
+        "diagnostic_never_optimizes",
+        "sealed_never_tunes"
+      ],
+      "properties": {
+        "train_only_for_sampling_matching_normalization_allocation_optimization": {
+          "const": true
+        },
+        "diagnostic_never_optimizes": {"const": true},
+        "sealed_never_tunes": {"const": true}
+      }
+    },
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cameras", "camera_count", "observation_count"],
+      "properties": {
+        "cameras": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "camera_count": {"type": "integer", "minimum": 0},
+        "observation_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

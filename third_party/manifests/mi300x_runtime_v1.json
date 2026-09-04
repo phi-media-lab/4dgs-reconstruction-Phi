@@ -1,0 +1,87 @@
+{
+  "schema_version": "p2g.mi300x_runtime_source_manifest.v1",
+  "status": "PUBLIC_SOURCE_BUILD_VERIFIED",
+  "verification_date": "2026-09-03",
+  "support_matrix": {
+    "host": "Linux x86_64",
+    "python_abi": "cp312",
+    "torch": "2.10.0+rocm7.0",
+    "hip": "7.0.51831",
+    "gpu_architecture": "gfx942",
+    "visible_device_count": 1
+  },
+  "components": [
+    {
+      "name": "AMD Ecosystem gsplat",
+      "repository": "https://github.com/AMD-Ecosystem/gsplat",
+      "revision": "b01acd43e3c7fa942f95fda0974e9125e4de7395",
+      "archive": "amd-gsplat-b01acd43.tar.gz",
+      "archive_sha256": "04050fbfc4a329ed760baf58362498290a735ed5cd74cb86f2c9e53c0b3f78f3",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE",
+      "license_sha256": "96a4f89293c0df19880da9b0e35f67589f5885ea61b224ef16bb2bd599a8a44d",
+      "notice_file": "NOTICE.txt",
+      "notice_sha256": "3b32cf90d77dda06df19b6277be0ea25912a4d951f4596a57457edccc7bd31a4"
+    },
+    {
+      "name": "OpenGL Mathematics (GLM)",
+      "repository": "https://github.com/g-truc/glm",
+      "revision": "33b4a621a697a305bc3a7610d290677b96beb181",
+      "archive": "glm-33b4a621.tar.gz",
+      "archive_sha256": "4755eb000b1400cddd6f94255e4f70886ed4a3dee07231811bd1b04c2ed75b0a",
+      "license": "MIT",
+      "license_selection": "MIT option selected from the upstream dual-license text",
+      "license_file": "copying.txt",
+      "license_sha256": "62d2d642c7d054d4fb4c9b42faad617d6c88fcd91e317f8035aa9f277cc159c3"
+    },
+    {
+      "name": "fused-ssim",
+      "repository": "https://github.com/rahul-goel/fused-ssim",
+      "revision": "a7c48d6dd7ac6dc39a7958c7c4452e0b10418f38",
+      "archive": "fused-ssim-a7c48d6d.tar.gz",
+      "archive_sha256": "95d68b3ac3e7c29e76a9a7384454ca7b946e6a793c989941fb6929c6ffa99927",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_sha256": "a8c94695b2966b09b4b89c785b62c0fa9d84f33fc29e070abbf70f1ab24f4a80"
+    }
+  ],
+  "recipe": {
+    "fetch_script": {
+      "path": "tools/release/fetch_mi300x_runtime_sources.sh",
+      "sha256": "4364d3322c2b3cef33cfdc278a28cde74c80137be5c2cc634cc6efe08f448fc4"
+    },
+    "build_script": {
+      "path": "tools/release/build_mi300x_runtime.sh",
+      "sha256": "7d54b214578897f257d1c4f1f5a1377d6cf1ce84703d38837d806be5f1ef68ad"
+    },
+    "patches": [
+      {
+        "path": "third_party/patches/amd-gsplat-b01acd43-build-identity.patch",
+        "sha256": "c6ac18feb5ccf3a76b61e0f7e65fec2b7154de53b1cc3d1535beaad8524252bd",
+        "scope": "packaging identity only"
+      },
+      {
+        "path": "third_party/patches/amd-gsplat-b01acd43-glm-include.patch",
+        "sha256": "3aea0f0e87854d2134b4b3d2adf5f16155995e219f81388f9b33ceea73ff12ea",
+        "scope": "external include location only"
+      }
+    ],
+    "wheel_byte_reproducibility": false,
+    "reproducibility_boundary": "Exact source archives and patches, distribution identity, CPython/Torch/HIP ABI, gfx942-only code objects, and registered numerical behavior"
+  },
+  "admitted_renderer_profile": {
+    "gaussian_batch_dimensions": 0,
+    "camera_count_per_batch": 1,
+    "camera_model": "undistorted pinhole",
+    "precision": "float32",
+    "packed": true,
+    "tile_size": 8,
+    "render_mode": "RGB",
+    "appearance": [
+      "materialized RGB",
+      "spherical harmonics through degree 3"
+    ]
+  },
+  "claim": "The exact public sources and packaging-only patches build an isolated gfx942 renderer and fused-SSIM runtime on the registered MI300X matrix.",
+  "claim_boundary": "This manifest does not claim support for other GPUs, ROCm releases, renderer modes, full 30k training quality, or redistribution rights for datasets, weights, learned assets, or media."
+}

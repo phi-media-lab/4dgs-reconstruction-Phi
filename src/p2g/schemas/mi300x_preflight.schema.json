@@ -1,0 +1,350 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/mi300x_preflight.schema.json",
+  "title": "MI300X resource-admission preflight",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_utc",
+    "hostname",
+    "operator",
+    "tools",
+    "commands",
+    "raw",
+    "evaluation",
+    "status",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.mi300x_preflight.v2"},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "hostname": {"type": "string", "minLength": 1},
+    "operator": {"const": "mi300x_resource_admission_preflight_v2"},
+    "tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amd_smi", "rocm_smi", "fuser"],
+      "properties": {
+        "amd_smi": {
+          "allOf": [
+            {"$ref": "#/$defs/tool"},
+            {"properties": {"name": {"const": "amd-smi"}}}
+          ]
+        },
+        "rocm_smi": {
+          "allOf": [
+            {"$ref": "#/$defs/tool"},
+            {"properties": {"name": {"const": "rocm-smi"}}}
+          ]
+        },
+        "fuser": {
+          "allOf": [
+            {"$ref": "#/$defs/tool"},
+            {"properties": {"name": {"const": "fuser"}}}
+          ]
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["process", "metric", "kfd"],
+      "properties": {
+        "process": {"$ref": "#/$defs/command"},
+        "metric": {"$ref": "#/$defs/command"},
+        "kfd": {"$ref": "#/$defs/command"}
+      }
+    },
+    "raw": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amd_smi_process",
+        "amd_smi_process_stdout",
+        "amd_smi_process_stderr",
+        "rocm_smi_metric_csv",
+        "rocm_smi_metric_stderr",
+        "kfd_fuser_stdout",
+        "kfd_fuser_stderr",
+        "process_metadata"
+      ],
+      "properties": {
+        "amd_smi_process": {"type": "array"},
+        "amd_smi_process_stdout": {"type": "string", "minLength": 1},
+        "amd_smi_process_stderr": {"type": "string"},
+        "rocm_smi_metric_csv": {"type": "string", "minLength": 1},
+        "rocm_smi_metric_stderr": {"type": "string"},
+        "kfd_fuser_stdout": {"type": "string"},
+        "kfd_fuser_stderr": {"type": "string"},
+        "process_metadata": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/procfs"}
+        }
+      }
+    },
+    "evaluation": {"$ref": "#/$defs/evaluation"},
+    "status": {"enum": ["PASS", "BUSY"]},
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "path", "sha256"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "pattern": "^/"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "returncode", "started_utc", "finished_utc", "elapsed_seconds"],
+      "properties": {
+        "argv": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "returncode": {"type": "integer"},
+        "started_utc": {"type": "string", "format": "date-time"},
+        "finished_utc": {"type": "string", "format": "date-time"},
+        "elapsed_seconds": {"type": "number", "minimum": 0}
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gpu_index",
+        "maximum_gpu_use_percent",
+        "maximum_vram_percent",
+        "admission_mode",
+        "owner_process",
+        "allowed_stopped_processes",
+        "command_timeout_seconds"
+      ],
+      "properties": {
+        "gpu_index": {"type": "integer", "minimum": 0},
+        "maximum_gpu_use_percent": {"type": "number", "minimum": 0, "maximum": 100},
+        "maximum_vram_percent": {"type": "number", "minimum": 0, "maximum": 100},
+        "admission_mode": {
+          "enum": ["shared_quality", "exclusive_performance"]
+        },
+        "owner_process": {
+          "anyOf": [{"$ref": "#/$defs/process_identity"}, {"type": "null"}]
+        },
+        "allowed_stopped_processes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/stopped_process_identity"}
+        },
+        "command_timeout_seconds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "process_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "starttime_ticks"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "starttime_ticks": {"type": "integer", "minimum": 1}
+      }
+    },
+    "stopped_process_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "starttime_ticks", "required_state"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "starttime_ticks": {"type": "integer", "minimum": 1},
+        "required_state": {"const": "T"}
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gpu_index",
+        "rocm_smi_device",
+        "gpu_use_percent",
+        "vram_percent"
+      ],
+      "properties": {
+        "gpu_index": {"type": "integer", "minimum": 0},
+        "rocm_smi_device": {"type": "string", "pattern": "^card[0-9]+$"},
+        "gpu_use_percent": {"type": "number", "minimum": 0, "maximum": 100},
+        "vram_percent": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    },
+    "procfs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pid",
+        "observed",
+        "uid",
+        "ppid",
+        "state",
+        "starttime_ticks",
+        "comm",
+        "exe",
+        "cwd",
+        "argv0",
+        "argc",
+        "cmdline_sha256",
+        "redaction"
+      ],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "observed": {"type": "boolean"},
+        "uid": {"type": ["integer", "null"], "minimum": 0},
+        "ppid": {"type": ["integer", "null"], "minimum": 0},
+        "state": {"type": ["string", "null"], "minLength": 1},
+        "starttime_ticks": {"type": ["integer", "null"], "minimum": 0},
+        "comm": {"type": ["string", "null"], "minLength": 1},
+        "exe": {"type": ["string", "null"], "minLength": 1},
+        "cwd": {"type": ["string", "null"], "minLength": 1},
+        "argv0": {"type": ["string", "null"], "minLength": 1},
+        "argc": {"type": "integer", "minimum": 0},
+        "cmdline_sha256": {
+          "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "redaction": {
+          "const": "argv arguments intentionally omitted; only argv0/hash/argc retained"
+        }
+      }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pid",
+        "name",
+        "vram_bytes",
+        "sources",
+        "procfs",
+        "raw_amd_smi",
+        "admission"
+      ],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "name": {"type": "string", "minLength": 1},
+        "vram_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"enum": ["amd_smi", "dev_kfd"]}
+        },
+        "procfs": {
+          "anyOf": [{"$ref": "#/$defs/procfs"}, {"type": "null"}]
+        },
+        "raw_amd_smi": {"type": ["object", "null"]},
+        "admission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "expected_starttime_ticks",
+            "required_state"
+          ],
+          "properties": {
+            "classification": {
+              "enum": [
+                "allowed_stopped",
+                "stage_owner",
+                "foreign",
+                "allowance_identity_mismatch",
+                "owner_identity_mismatch"
+              ]
+            },
+            "expected_starttime_ticks": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
+            "required_state": {
+              "anyOf": [{"const": "T"}, {"type": "null"}]
+            }
+          }
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "operator",
+        "config",
+        "config_id",
+        "claim_class",
+        "status",
+        "reasons",
+        "warnings",
+        "contention_observed",
+        "device",
+        "process_count",
+        "amd_smi_process_count",
+        "kfd_process_count",
+        "foreign_process_count",
+        "allowance_mismatch_count",
+        "owner_mismatch_count",
+        "processes",
+        "claim_boundary"
+      ],
+      "properties": {
+        "schema_version": {"const": "p2g.mi300x_preflight_evaluation.v2"},
+        "operator": {"const": "mi300x_resource_admission_preflight_v2"},
+        "config": {"$ref": "#/$defs/config"},
+        "config_id": {"type": "string", "pattern": "^gpupreflight_[0-9a-f]{32}$"},
+        "claim_class": {
+          "enum": [
+            "shared_quality_observation",
+            "exclusive_performance_precondition"
+          ]
+        },
+        "status": {"enum": ["PASS", "BUSY"]},
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "GPU_USE_ABOVE_LIMIT",
+              "VRAM_ABOVE_LIMIT",
+              "FOREIGN_GPU_PROCESSES_PRESENT",
+              "STOPPED_PROCESS_ALLOWANCE_MISMATCH",
+              "OWNER_PROCESS_IDENTITY_MISMATCH"
+            ]
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "FOREIGN_GPU_PROCESSES_PRESENT",
+              "STOPPED_PROCESS_ALLOWANCE_MISMATCH"
+            ]
+          }
+        },
+        "contention_observed": {"type": "boolean"},
+        "device": {"$ref": "#/$defs/device"},
+        "process_count": {"type": "integer", "minimum": 0},
+        "amd_smi_process_count": {"type": "integer", "minimum": 0},
+        "kfd_process_count": {"type": "integer", "minimum": 0},
+        "foreign_process_count": {"type": "integer", "minimum": 0},
+        "allowance_mismatch_count": {"type": "integer", "minimum": 0},
+        "owner_mismatch_count": {"type": "integer", "minimum": 0},
+        "processes": {"type": "array", "items": {"$ref": "#/$defs/process"}},
+        "claim_boundary": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

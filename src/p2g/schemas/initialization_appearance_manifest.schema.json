@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/initialization_appearance_manifest.v1.json",
+  "title": "Pixel4DGS initialization appearance proposal manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "observation_manifest_sha256",
+    "source_initialization",
+    "role",
+    "appearance",
+    "coverage",
+    "artifacts",
+    "integrity_status",
+    "appearance_status",
+    "trainer_eligible",
+    "gaussian_tensor_present",
+    "limitations",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.initialization_appearance_manifest.v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "observation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "source_initialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest_logical_sha256",
+        "manifest_file_sha256",
+        "audit_file_sha256",
+        "sha256sums_file_sha256",
+        "base_reservation_status"
+      ],
+      "properties": {
+        "schema_version": {"const": "p2g.initialization_proposal_manifest.v1"},
+        "manifest_logical_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_file_sha256": {"$ref": "#/$defs/sha256"},
+        "audit_file_sha256": {"$ref": "#/$defs/sha256"},
+        "sha256sums_file_sha256": {"$ref": "#/$defs/sha256"},
+        "base_reservation_status": {"const": "PASS"}
+      }
+    },
+    "role": {"const": "train"},
+    "appearance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "decode_operator",
+        "sample_operator",
+        "sh0_convention",
+        "config",
+        "config_id",
+        "operator_sources"
+      ],
+      "properties": {
+        "operator": {"const": "weighted_channel_median_linear_rgb_sh0_v1"},
+        "decode_operator": {"const": "imageio_pillow_rgb8_srgb_eotf_v1"},
+        "sample_operator": {"const": "first_party_half_pixel_linear_rgb_bilinear_v1"},
+        "sh0_convention": {"const": "gsplat_sh0_plus_half_v1"},
+        "config": {"type": "object"},
+        "config_id": {"type": "string", "minLength": 1},
+        "operator_sources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "appearance_initialization",
+            "initialization_appearance_bundle"
+          ],
+          "properties": {
+            "appearance_initialization": {"$ref": "#/$defs/source_file"},
+            "initialization_appearance_bundle": {"$ref": "#/$defs/source_file"}
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "carrier_rows",
+        "image_rows",
+        "appearance_request_rows",
+        "valid_sample_rows",
+        "invalid_sample_rows",
+        "appearance_pass_rows",
+        "appearance_incomplete_rows"
+      ],
+      "properties": {
+        "carrier_rows": {"type": "integer", "minimum": 1},
+        "image_rows": {"type": "integer", "minimum": 0},
+        "appearance_request_rows": {"type": "integer", "minimum": 0},
+        "valid_sample_rows": {"type": "integer", "minimum": 0},
+        "invalid_sample_rows": {"type": "integer", "minimum": 0},
+        "appearance_pass_rows": {"type": "integer", "minimum": 0},
+        "appearance_incomplete_rows": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image_receipts", "appearance_samples", "appearance_proposals"],
+      "properties": {
+        "image_receipts": {"$ref": "#/$defs/table"},
+        "appearance_samples": {"$ref": "#/$defs/table"},
+        "appearance_proposals": {"$ref": "#/$defs/table"}
+      }
+    },
+    "integrity_status": {"const": "PASS"},
+    "appearance_status": {"enum": ["PASS", "INCOMPLETE"]},
+    "trainer_eligible": {"const": false},
+    "gaussian_tensor_present": {"const": false},
+    "limitations": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schema", "row_count", "file_sha256", "logical_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "schema": {"type": "string", "minLength": 1},
+        "row_count": {"type": "integer", "minimum": 0},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "logical_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

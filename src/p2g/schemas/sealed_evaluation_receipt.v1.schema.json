@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.dev/schemas/sealed_evaluation_receipt.v1.schema.json",
+  "title": "Pixel4DGS sealed evaluation receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "gate",
+    "candidate",
+    "diagnostic",
+    "sealed",
+    "checks",
+    "runtime",
+    "implementation_sha256",
+    "claim_boundary",
+    "receipt_id"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.sealed_evaluation_receipt.v1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id",
+        "gate_file_sha256",
+        "recipe_id",
+        "recipe_file_sha256",
+        "profile_file_sha256"
+      ],
+      "properties": {
+        "gate_id": {"$ref": "#/$defs/sha256"},
+        "gate_file_sha256": {"$ref": "#/$defs/sha256"},
+        "recipe_id": {"$ref": "#/$defs/sha256"},
+        "recipe_file_sha256": {"$ref": "#/$defs/sha256"},
+        "profile_file_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset_id",
+        "completed_steps",
+        "gaussian_count",
+        "max_sh_degree",
+        "render_sh_degree",
+        "observation_manifest",
+        "files"
+      ],
+      "properties": {
+        "dataset_id": {"type": "string", "minLength": 1},
+        "completed_steps": {"type": "integer", "minimum": 1},
+        "gaussian_count": {"type": "integer", "minimum": 1},
+        "max_sh_degree": {"type": "integer", "minimum": 0, "maximum": 3},
+        "render_sh_degree": {"type": "integer", "minimum": 0, "maximum": 3},
+        "observation_manifest": {"$ref": "#/$defs/fileRecord"},
+        "files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "config.toml",
+            "training.json",
+            "runtime.json",
+            "model.safetensors",
+            "model.json",
+            "diagnostic_evaluation.json"
+          ],
+          "properties": {
+            "config.toml": {"$ref": "#/$defs/fileRecord"},
+            "training.json": {"$ref": "#/$defs/fileRecord"},
+            "runtime.json": {"$ref": "#/$defs/fileRecord"},
+            "model.safetensors": {"$ref": "#/$defs/fileRecord"},
+            "model.json": {"$ref": "#/$defs/fileRecord"},
+            "diagnostic_evaluation.json": {"$ref": "#/$defs/fileRecord"}
+          }
+        }
+      }
+    },
+    "diagnostic": {"$ref": "#/$defs/partitionResult"},
+    "sealed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_count", "camera_ids", "mean", "observations"],
+      "properties": {
+        "observation_count": {"type": "integer", "minimum": 1},
+        "camera_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+        },
+        "mean": {"$ref": "#/$defs/metricPair"},
+        "observations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/observationResult"}
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnostic_mean_psnr",
+        "diagnostic_mean_ssim",
+        "sealed_mean_psnr",
+        "sealed_mean_ssim"
+      ],
+      "properties": {
+        "diagnostic_mean_psnr": {"$ref": "#/$defs/check"},
+        "diagnostic_mean_ssim": {"$ref": "#/$defs/check"},
+        "sealed_mean_psnr": {"$ref": "#/$defs/check"},
+        "sealed_mean_ssim": {"$ref": "#/$defs/check"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "implementation_sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sealed_evaluate",
+        "evaluate",
+        "dataset",
+        "losses",
+        "renderer",
+        "model",
+        "checkpoint",
+        "config",
+        "train"
+      ],
+      "properties": {
+        "sealed_evaluate": {"$ref": "#/$defs/sha256"},
+        "evaluate": {"$ref": "#/$defs/sha256"},
+        "dataset": {"$ref": "#/$defs/sha256"},
+        "losses": {"$ref": "#/$defs/sha256"},
+        "renderer": {"$ref": "#/$defs/sha256"},
+        "model": {"$ref": "#/$defs/sha256"},
+        "checkpoint": {"$ref": "#/$defs/sha256"},
+        "config": {"$ref": "#/$defs/sha256"},
+        "train": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "receipt_id": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256"],
+      "properties": {
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "metricPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["psnr", "ssim"],
+      "properties": {
+        "psnr": {"type": "number"},
+        "ssim": {"type": "number", "minimum": -1, "maximum": 1}
+      }
+    },
+    "partitionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_count", "camera_ids", "mean"],
+      "properties": {
+        "observation_count": {"type": "integer", "minimum": 1},
+        "camera_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+        },
+        "mean": {"$ref": "#/$defs/metricPair"}
+      }
+    },
+    "observationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "camera_id",
+        "frame_id",
+        "timestamp_seconds",
+        "target_sha256",
+        "render",
+        "metrics"
+      ],
+      "properties": {
+        "observation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+        "camera_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+        "frame_id": {"type": "integer", "minimum": 0},
+        "timestamp_seconds": {"type": "number"},
+        "target_sha256": {"$ref": "#/$defs/sha256"},
+        "render": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["file", "bytes", "sha256"],
+          "properties": {
+            "file": {"type": "string", "pattern": "^renders/[A-Za-z0-9][A-Za-z0-9._:-]*\\.png$"},
+            "bytes": {"type": "integer", "minimum": 1},
+            "sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        "metrics": {"$ref": "#/$defs/metricPair"}
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual", "operator", "threshold", "pass"],
+      "properties": {
+        "actual": {"type": "number"},
+        "operator": {"const": ">="},
+        "threshold": {"type": "number"},
+        "pass": {"type": "boolean"}
+      }
+    }
+  }
+}

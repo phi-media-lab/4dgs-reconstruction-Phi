@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/mi300x_resource_window.v1.schema.json",
+  "title": "MI300X stage resource window",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operator",
+    "operator_source_sha256",
+    "created_utc",
+    "closed_utc",
+    "hostname",
+    "stage",
+    "config",
+    "tool",
+    "operation_status",
+    "status",
+    "reasons",
+    "warnings",
+    "contention_observed",
+    "sample_count",
+    "maximum_observation_gap_seconds",
+    "observation_chain_sha256",
+    "first_observation",
+    "last_observation",
+    "transitions",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.mi300x_resource_window.v1"},
+    "operator": {"const": "mi300x_kfd_resource_window_guard_v1"},
+    "operator_source_sha256": {"$ref": "#/$defs/sha256"},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "closed_utc": {"type": "string", "format": "date-time"},
+    "hostname": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["propose", "train", "evaluate"]},
+    "config": {"$ref": "#/$defs/config"},
+    "tool": {"$ref": "#/$defs/tool"},
+    "operation_status": {"enum": ["NOT_STARTED", "RETURNED", "RAISED"]},
+    "status": {"enum": ["PASS", "BUSY"]},
+    "reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "FOREIGN_KFD_PROCESS_ARRIVED",
+          "STOPPED_PROCESS_ALLOWANCE_MISMATCH",
+          "OWNER_PROCESS_IDENTITY_MISMATCH",
+          "MONITOR_CAPTURE_FAILED",
+          "MONITOR_THREAD_DID_NOT_STOP",
+          "OBSERVATION_GAP_ABOVE_LIMIT"
+        ]
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "FOREIGN_KFD_PROCESS_ARRIVED",
+          "STOPPED_PROCESS_ALLOWANCE_MISMATCH"
+        ]
+      }
+    },
+    "contention_observed": {"type": "boolean"},
+    "sample_count": {"type": "integer", "minimum": 2},
+    "maximum_observation_gap_seconds": {"type": "number", "minimum": 0},
+    "observation_chain_sha256": {"$ref": "#/$defs/sha256"},
+    "first_observation": {"$ref": "#/$defs/observation"},
+    "last_observation": {"$ref": "#/$defs/observation"},
+    "transitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/observation"}
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "process_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "starttime_ticks"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "starttime_ticks": {"type": "integer", "minimum": 1}
+      }
+    },
+    "stopped_process_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "starttime_ticks", "required_state"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "starttime_ticks": {"type": "integer", "minimum": 1},
+        "required_state": {"const": "T"}
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gpu_index",
+        "admission_mode",
+        "owner_process",
+        "allowed_stopped_processes",
+        "poll_interval_seconds",
+        "maximum_observation_gap_seconds",
+        "command_timeout_seconds"
+      ],
+      "properties": {
+        "gpu_index": {"type": "integer", "minimum": 0},
+        "admission_mode": {
+          "enum": ["shared_quality", "exclusive_performance"]
+        },
+        "owner_process": {"$ref": "#/$defs/process_identity"},
+        "allowed_stopped_processes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/stopped_process_identity"}
+        },
+        "poll_interval_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "maximum_observation_gap_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "command_timeout_seconds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "tool": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "path", "sha256"],
+          "properties": {
+            "name": {"const": "fuser"},
+            "path": {"type": "string", "pattern": "^/"},
+            "sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "path", "sha256"],
+          "properties": {
+            "name": {"const": "injected-test-sampler"},
+            "path": {"type": "null"},
+            "sha256": {"type": "null"}
+          }
+        }
+      ]
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "state", "starttime_ticks", "classification"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 1},
+        "state": {"type": ["string", "null"], "minLength": 1},
+        "starttime_ticks": {"type": ["integer", "null"], "minimum": 0},
+        "classification": {
+          "enum": [
+            "stage_owner",
+            "owned_descendant",
+            "allowed_stopped",
+            "stopped_identity_mismatch",
+            "owner_identity_mismatch",
+            "foreign"
+          ]
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_index",
+        "observed_utc",
+        "elapsed_seconds",
+        "status",
+        "reasons",
+        "warnings",
+        "contention_observed",
+        "processes"
+      ],
+      "properties": {
+        "sample_index": {"type": "integer", "minimum": 1},
+        "observed_utc": {"type": "string", "format": "date-time"},
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "status": {"enum": ["PASS", "BUSY"]},
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "FOREIGN_KFD_PROCESS_ARRIVED",
+              "STOPPED_PROCESS_ALLOWANCE_MISMATCH",
+              "OWNER_PROCESS_IDENTITY_MISMATCH",
+              "MONITOR_CAPTURE_FAILED"
+            ]
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "FOREIGN_KFD_PROCESS_ARRIVED",
+              "STOPPED_PROCESS_ALLOWANCE_MISMATCH"
+            ]
+          }
+        },
+        "contention_observed": {"type": "boolean"},
+        "processes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/process"}
+        },
+        "capture_error": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

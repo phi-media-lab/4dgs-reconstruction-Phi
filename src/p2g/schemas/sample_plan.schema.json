@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/sample_plan.v1.json",
+  "title": "Pixel4DGS deterministic sample plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_manifest_sha256",
+    "seed",
+    "steps",
+    "microbatches_per_step",
+    "sampler",
+    "logical_sha256",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.sample_plan.v1"},
+    "observation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "seed": {"type": "integer", "minimum": 0},
+    "steps": {"type": "integer", "minimum": 1},
+    "microbatches_per_step": {"type": "integer", "minimum": 1},
+    "sampler": {"const": "sha256_counter_uniform_train_observation_v1"},
+    "logical_sha256": {"$ref": "#/$defs/sha256"},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sample_id",
+          "step",
+          "microbatch",
+          "observation_id",
+          "camera_id",
+          "frame_id",
+          "timestamp_seconds"
+        ],
+        "properties": {
+          "sample_id": {"$ref": "#/$defs/sha256"},
+          "step": {"type": "integer", "minimum": 0},
+          "microbatch": {"type": "integer", "minimum": 0},
+          "observation_id": {"type": "string"},
+          "camera_id": {"type": "string"},
+          "frame_id": {"type": "integer", "minimum": 0},
+          "timestamp_seconds": {"type": "number"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=78.1,<79", "wheel>=0.45,<0.46"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixel4dgs"
+version = "0.1.0.dev0"
+description = "Trainable pixel-to-4D-Gaussian pipeline for AMD Instinct MI300X"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
+dependencies = [
+  "imageio>=2.37,<3",
+  "jsonschema>=4.25,<5",
+  "numpy>=2,<3",
+  "Pillow>=12,<13",
+  "pyarrow>=21,<22",
+  "rich>=14,<15",
+  "safetensors>=0.6,<1",
+  "scipy>=1.18,<2",
+  "typer>=0.16,<1",
+]
+
+[project.urls]
+Repository = "https://github.com/phi-media-lab/4dgs-reconstruction-phi"
+Issues = "https://github.com/phi-media-lab/4dgs-reconstruction-phi/issues"
+
+[project.scripts]
+p2g = "p2g.cli:main"
+
+[project.optional-dependencies]
+selfcap = [
+  "numpy==2.5.2",
+  "opencv-python-headless==5.0.0.93",
+  "Pillow==12.3.0",
+]
+dev = [
+  "hypothesis>=6.138,<7",
+  "pyright>=1.1.404,<2",
+  "pytest>=8.4,<9",
+  "pytest-cov>=6.2,<7",
+  "ruff>=0.12,<1",
+]
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+p2g = ["registries/*.json", "schemas/*.json"]
+
+[tool.setuptools.data-files]
+"share/pixel4dgs" = ["sbom.cdx.json"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+include = ["src/p2g"]

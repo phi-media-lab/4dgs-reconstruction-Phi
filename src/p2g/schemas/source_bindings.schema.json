@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/source_bindings.v1.json",
+  "title": "Pixel4DGS source bindings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "source_root",
+    "status",
+    "verification_complete",
+    "bindings",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.source_bindings.v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "source_root": {"type": "string", "minLength": 1},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "verification_complete": {"type": "boolean"},
+    "bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "binding_id",
+          "kind",
+          "locator",
+          "size_bytes",
+          "expected_sha256",
+          "actual_sha256",
+          "verification",
+          "status"
+        ],
+        "properties": {
+          "binding_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "kind": {"type": "string", "minLength": 1},
+          "locator": {"type": "string", "minLength": 1},
+          "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+          "expected_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+          "actual_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+          "verification": {"enum": ["direct", "upstream_assertion"]},
+          "status": {"enum": ["PASS", "FAIL", "UNVERIFIED"]}
+        }
+      }
+    },
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

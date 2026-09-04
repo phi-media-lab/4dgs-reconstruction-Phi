@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.dev/schemas/asset_bundle.v1.schema.json",
+  "title": "Pixel4DGS AssetBundle v1 metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "format_version",
+    "model",
+    "equations",
+    "appearance",
+    "time",
+    "coordinates",
+    "camera",
+    "renderer",
+    "training",
+    "producer",
+    "rights"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.asset_bundle.v1"},
+    "format_version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["major", "minor"],
+      "properties": {
+        "major": {"const": 1},
+        "minor": {"type": "integer", "minimum": 0}
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "schema_version",
+        "bytes",
+        "sha256",
+        "gaussian_count",
+        "tensor_count",
+        "tensors"
+      ],
+      "properties": {
+        "file": {"const": "model.safetensors"},
+        "schema_version": {"const": "p2g.asset_model.v1"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "gaussian_count": {"type": "integer", "minimum": 1},
+        "tensor_count": {"type": "integer", "minimum": 1},
+        "tensors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "dtype", "shape", "bytes"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "dtype": {"enum": ["torch.float32", "torch.int64"]},
+              "shape": {
+                "type": "array",
+                "items": {"type": "integer", "minimum": 0}
+              },
+              "bytes": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "equations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "motion",
+        "duration",
+        "transient",
+        "persistence",
+        "gate_logit_scale",
+        "activation",
+        "persistent"
+      ],
+      "properties": {
+        "version": {"const": "p2g.linear_motion_gaussian_gate.v1"},
+        "motion": {"type": "string", "minLength": 1},
+        "duration": {"type": "string", "minLength": 1},
+        "transient": {"type": "string", "minLength": 1},
+        "persistence": {"enum": ["off", "learned"]},
+        "gate_logit_scale": {"type": "number", "exclusiveMinimum": 0},
+        "activation": {"type": "string", "minLength": 1},
+        "persistent": {"type": "string", "minLength": 1}
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "representation",
+        "convention",
+        "max_sh_degree",
+        "default_sh_degree",
+        "coefficient_color_space",
+        "output_photometric_space"
+      ],
+      "properties": {
+        "representation": {"const": "real_spherical_harmonics"},
+        "convention": {"const": "gsplat_real_sh_v1"},
+        "max_sh_degree": {"type": "integer", "minimum": 0, "maximum": 3},
+        "default_sh_degree": {"type": "integer", "minimum": 0, "maximum": 3},
+        "coefficient_color_space": {"const": "linear_rgb"},
+        "output_photometric_space": {"enum": ["linear_rgb", "srgb_reference_profile"]}
+      }
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "valid_interval", "reference_time"],
+      "properties": {
+        "unit": {"const": "seconds"},
+        "valid_interval": {
+          "type": "array",
+          "prefixItems": [{"type": "number"}, {"type": "number"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "reference_time": {"type": "number"}
+      }
+    },
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "world_convention",
+        "world_unit",
+        "calibration_scale",
+        "extrinsic",
+        "camera_axes"
+      ],
+      "properties": {
+        "world_convention": {"type": "string", "minLength": 1},
+        "world_unit": {"type": "string", "minLength": 1},
+        "calibration_scale": {"type": "number", "exclusiveMinimum": 0},
+        "extrinsic": {"const": "world_to_camera"},
+        "camera_axes": {"const": "opencv_x_right_y_down_z_forward"}
+      }
+    },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "distortion", "intrinsic_matrix", "extrinsic_matrix"],
+      "properties": {
+        "model": {"const": "pinhole"},
+        "distortion": {"const": "pre-undistorted"},
+        "intrinsic_matrix": {"const": "3x3_pixel_center"},
+        "extrinsic_matrix": {"const": "4x4_world_to_camera"}
+      }
+    },
+    "renderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "abi",
+        "backend",
+        "required_architecture",
+        "near_plane",
+        "far_plane",
+        "eps2d",
+        "radius_clip",
+        "tile_size",
+        "packed",
+        "background_linear_rgb",
+        "clamp_rgb"
+      ],
+      "properties": {
+        "abi": {"const": "p2g.gsplat_rocm.v1"},
+        "backend": {"const": "gsplat_rocm"},
+        "required_architecture": {"enum": ["gfx942", "unspecified"]},
+        "near_plane": {"type": "number", "exclusiveMinimum": 0},
+        "far_plane": {"type": "number", "exclusiveMinimum": 0},
+        "eps2d": {"type": "number", "minimum": 0},
+        "radius_clip": {"type": "number", "minimum": 0},
+        "tile_size": {"const": 8},
+        "packed": {"type": "boolean"},
+        "background_linear_rgb": {
+          "type": "array",
+          "prefixItems": [
+            {"type": "number", "minimum": 0, "maximum": 1},
+            {"type": "number", "minimum": 0, "maximum": 1},
+            {"type": "number", "minimum": 0, "maximum": 1}
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "clamp_rgb": {"type": "boolean"}
+      }
+    },
+    "training": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["final_step", "source_bundle_digests"],
+      "properties": {
+        "final_step": {"type": "integer", "minimum": 0},
+        "source_bundle_digests": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "git_revision", "dependencies"],
+      "properties": {
+        "name": {"const": "pixel4dgs"},
+        "version": {"type": "string", "minLength": 1},
+        "git_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "dependencies": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_license",
+        "source_data_license",
+        "redistribution",
+        "provenance_summary"
+      ],
+      "properties": {
+        "asset_license": {"type": "string", "minLength": 1},
+        "source_data_license": {"type": "string", "minLength": 1},
+        "redistribution": {"enum": ["allowed", "restricted", "review_required"]},
+        "provenance_summary": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

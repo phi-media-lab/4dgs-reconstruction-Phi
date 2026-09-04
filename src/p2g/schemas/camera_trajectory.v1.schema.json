@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.dev/schemas/camera_trajectory.v1.schema.json",
+  "title": "Pixel4DGS asset-independent camera trajectory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "time_unit",
+    "camera_model",
+    "pixel_domain",
+    "intrinsic_matrix",
+    "extrinsic_matrix",
+    "camera_axes",
+    "width",
+    "height",
+    "fps",
+    "frames"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.camera_trajectory.v1"},
+    "time_unit": {"const": "seconds"},
+    "camera_model": {"const": "pinhole"},
+    "pixel_domain": {"const": "pre-undistorted"},
+    "intrinsic_matrix": {"const": "3x3_pixel_center"},
+    "extrinsic_matrix": {"const": "4x4_world_to_camera"},
+    "camera_axes": {"const": "opencv_x_right_y_down_z_forward"},
+    "width": {"type": "integer", "minimum": 1, "maximum": 16384},
+    "height": {"type": "integer", "minimum": 1, "maximum": 16384},
+    "fps": {"type": "integer", "minimum": 1, "maximum": 240},
+    "frames": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["timestamp_seconds", "intrinsic", "world_to_camera"],
+        "properties": {
+          "timestamp_seconds": {"type": "number"},
+          "intrinsic": {"$ref": "#/$defs/matrix3"},
+          "world_to_camera": {"$ref": "#/$defs/matrix4"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "matrix3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": {"type": "number"}
+      }
+    },
+    "matrix4": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 4,
+        "maxItems": 4,
+        "items": {"type": "number"}
+      }
+    }
+  }
+}

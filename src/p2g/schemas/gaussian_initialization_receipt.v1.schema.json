@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/gaussian_initialization_receipt.v1.json",
+  "title": "Pixel4DGS Gaussian initialization receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "trainer_eligible",
+    "source",
+    "policy",
+    "population",
+    "statistics",
+    "frames",
+    "tensor",
+    "limitations",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "p2g.gaussian_initialization_receipt.v1"},
+    "status": {"const": "COMPLETE"},
+    "trainer_eligible": {"const": true},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_sequence", "tensor_cache"],
+      "properties": {
+        "proposal_sequence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "manifest_sha256",
+            "provider_identity_sha256",
+            "frame_ids"
+          ],
+          "properties": {
+            "schema": {"const": "p2g.roma_point_proposal_sequence.v1"},
+            "manifest_sha256": {"$ref": "#/$defs/sha256"},
+            "provider_identity_sha256": {"$ref": "#/$defs/sha256"},
+            "frame_ids": {
+              "type": "array",
+              "minItems": 2,
+              "uniqueItems": true,
+              "items": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "tensor_cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version",
+            "manifest_sha256",
+            "observation_manifest_sha256",
+            "timestamp_sha256",
+            "frame_count",
+            "camera_count"
+          ],
+          "properties": {
+            "schema_version": {"const": "p2g.tensor_cache.v1"},
+            "manifest_sha256": {"$ref": "#/$defs/sha256"},
+            "observation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+            "timestamp_sha256": {"$ref": "#/$defs/sha256"},
+            "frame_count": {"type": "integer", "minimum": 2},
+            "camera_count": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sampling_mode",
+        "sampling_voxel_size_world",
+        "sampling_evidence_fraction",
+        "seed",
+        "requested_gaussians",
+        "gaussians_per_frame",
+        "assembled_gaussians",
+        "velocity",
+        "scale",
+        "scale_multiplier",
+        "opacity",
+        "duration_seconds",
+        "duration_min_seconds",
+        "duration_max_seconds",
+        "time_offset_seconds",
+        "higher_order_sh",
+        "runtime_ids"
+      ],
+      "properties": {
+        "sampling_mode": {"$ref": "#/$defs/sampling_mode"},
+        "sampling_voxel_size_world": {
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0
+        },
+        "sampling_evidence_fraction": {
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "seed": {"type": "integer", "minimum": 0},
+        "requested_gaussians": {"type": "integer", "minimum": 2},
+        "gaussians_per_frame": {"type": "integer", "minimum": 1},
+        "assembled_gaussians": {"type": "integer", "minimum": 2},
+        "velocity": {"type": "string", "minLength": 1},
+        "scale": {"const": "sampled_frame_knn3_rms_times_multiplier"},
+        "scale_multiplier": {"type": "number", "exclusiveMinimum": 0},
+        "opacity": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "duration_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "duration_min_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "duration_max_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "time_offset_seconds": {"type": "number"},
+        "higher_order_sh": {"const": "loader_zero_fill_at_configured_degree"},
+        "runtime_ids": {"const": "contiguous_zero_based_v1"}
+      }
+    },
+    "population": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frame_count",
+        "source_candidate_count",
+        "requested_gaussians",
+        "assembled_gaussians",
+        "discarded_budget_remainder"
+      ],
+      "properties": {
+        "frame_count": {"type": "integer", "minimum": 2},
+        "source_candidate_count": {"type": "integer", "minimum": 2},
+        "requested_gaussians": {"type": "integer", "minimum": 2},
+        "assembled_gaussians": {"type": "integer", "minimum": 2},
+        "discarded_budget_remainder": {"type": "integer", "minimum": 0}
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "center_time_seconds",
+        "scale_world",
+        "velocity_norm_world_per_second"
+      ],
+      "properties": {
+        "center_time_seconds": {"$ref": "#/$defs/quantiles"},
+        "scale_world": {"$ref": "#/$defs/quantiles"},
+        "velocity_norm_world_per_second": {"$ref": "#/$defs/quantiles"}
+      }
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "frame_id",
+          "timestamp_seconds",
+          "point_ply_sha256",
+          "provenance_sha256",
+          "source_candidate_count",
+          "selected_count",
+          "reference_frame_id",
+          "delta_time_seconds",
+          "sampling"
+        ],
+        "properties": {
+          "frame_id": {"type": "integer", "minimum": 0},
+          "timestamp_seconds": {"type": "number"},
+          "point_ply_sha256": {"$ref": "#/$defs/sha256"},
+          "provenance_sha256": {"$ref": "#/$defs/sha256"},
+          "source_candidate_count": {"type": "integer", "minimum": 1},
+          "selected_count": {"type": "integer", "minimum": 1},
+          "reference_frame_id": {"type": "integer", "minimum": 0},
+          "delta_time_seconds": {"type": "number", "not": {"const": 0}},
+          "sampling": {
+            "type": "object",
+            "required": [
+              "mode",
+              "replacement",
+              "source_candidate_count",
+              "selected_count",
+              "selected_unique_source_count"
+            ],
+            "properties": {
+              "mode": {"$ref": "#/$defs/sampling_mode"},
+              "replacement": {"type": "string", "minLength": 1},
+              "source_candidate_count": {"type": "integer", "minimum": 1},
+              "selected_count": {"type": "integer", "minimum": 1},
+              "selected_unique_source_count": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "tensor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "container_sha256",
+        "canonical_digest_schema",
+        "canonical_tensor_sha256",
+        "planes"
+      ],
+      "properties": {
+        "path": {"const": "initialization.safetensors"},
+        "container_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_digest_schema": {
+          "const": "p2g.gaussian_initialization_canonical_tensor.v1"
+        },
+        "canonical_tensor_sha256": {"$ref": "#/$defs/sha256"},
+        "planes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "means",
+            "log_scales",
+            "quaternions",
+            "opacity_logits",
+            "sh0",
+            "center_times",
+            "duration_logits",
+            "velocities",
+            "runtime_ids"
+          ],
+          "properties": {
+            "means": {"$ref": "#/$defs/float_plane"},
+            "log_scales": {"$ref": "#/$defs/float_plane"},
+            "quaternions": {"$ref": "#/$defs/float_plane"},
+            "opacity_logits": {"$ref": "#/$defs/float_plane"},
+            "sh0": {"$ref": "#/$defs/float_plane"},
+            "center_times": {"$ref": "#/$defs/float_plane"},
+            "duration_logits": {"$ref": "#/$defs/float_plane"},
+            "velocities": {"$ref": "#/$defs/float_plane"},
+            "runtime_ids": {"$ref": "#/$defs/integer_plane"}
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sampling_mode": {
+      "enum": [
+        "raw_candidate_uniform",
+        "occupied_voxel_uniform",
+        "triangulation_information_mixture",
+        "paired_matcher_support_rank_mixture",
+        "paired_multiview_consensus_rank_mixture"
+      ]
+    },
+    "quantiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum", "p10", "median", "p90", "p99", "maximum"],
+      "properties": {
+        "minimum": {"type": "number"},
+        "p10": {"type": "number"},
+        "median": {"type": "number"},
+        "p90": {"type": "number"},
+        "p99": {"type": "number"},
+        "maximum": {"type": "number"}
+      }
+    },
+    "shape": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {"type": "integer", "minimum": 1}
+    },
+    "float_plane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dtype", "shape"],
+      "properties": {
+        "dtype": {"const": "float32"},
+        "shape": {"$ref": "#/$defs/shape"}
+      }
+    },
+    "integer_plane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dtype", "shape"],
+      "properties": {
+        "dtype": {"const": "int64"},
+        "shape": {"$ref": "#/$defs/shape"}
+      }
+    }
+  }
+}

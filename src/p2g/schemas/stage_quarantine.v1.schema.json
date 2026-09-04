@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/stage_quarantine.v1.schema.json",
+  "title": "Preserved pipeline-stage quarantine attempt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "created_utc",
+    "stage",
+    "ordinal",
+    "attempt",
+    "reason",
+    "original_path",
+    "payload_path",
+    "directories",
+    "files",
+    "summary",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.stage_quarantine.v1"},
+    "status": {"const": "QUARANTINED"},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "stage": {
+      "enum": ["prepare", "propose", "initialize", "train", "evaluate", "asset"]
+    },
+    "ordinal": {"type": "integer", "minimum": 0, "maximum": 5},
+    "attempt": {"type": "integer", "minimum": 1},
+    "reason": {
+      "enum": [
+        "INCOMPLETE_NON_RESUMABLE_OUTPUT",
+        "NO_SAFE_TRAINING_CHECKPOINT",
+        "RESOURCE_WINDOW_INVALIDATED"
+      ]
+    },
+    "original_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "payload_path": {"const": "payload"},
+    "directories": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "files": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/file"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directory_count", "file_count", "total_bytes"],
+      "properties": {
+        "directory_count": {"type": "integer", "minimum": 0},
+        "file_count": {"type": "integer", "minimum": 0},
+        "total_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mode", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "mode": {"type": "string", "pattern": "^[0-7]{4}$"},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

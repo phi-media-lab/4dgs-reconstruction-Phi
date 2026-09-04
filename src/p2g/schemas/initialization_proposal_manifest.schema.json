@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/initialization_proposal_manifest.v1.json",
+  "title": "Pixel4DGS carrier initialization proposal bundle manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "observation_manifest_sha256",
+    "source_spatial",
+    "source_carrier",
+    "role",
+    "initialization",
+    "coverage",
+    "artifacts",
+    "integrity_status",
+    "base_reservation_status",
+    "initialization_status",
+    "trainer_eligible",
+    "gaussian_tensor_present",
+    "limitations",
+    "claim_boundary",
+    "logical_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.initialization_proposal_manifest.v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "observation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "source_spatial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_logical_sha256",
+        "manifest_file_sha256",
+        "audit_file_sha256",
+        "sha256sums_file_sha256",
+        "spatial_eligible"
+      ],
+      "properties": {
+        "manifest_logical_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_file_sha256": {"$ref": "#/$defs/sha256"},
+        "audit_file_sha256": {"$ref": "#/$defs/sha256"},
+        "sha256sums_file_sha256": {"$ref": "#/$defs/sha256"},
+        "spatial_eligible": {"type": "boolean"}
+      }
+    },
+    "source_carrier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "schema_version",
+        "manifest_logical_sha256",
+        "manifest_file_sha256",
+        "audit_file_sha256",
+        "sha256sums_file_sha256",
+        "temporal_eligible"
+      ],
+      "properties": {
+        "kind": {"enum": ["geometry", "learned"]},
+        "schema_version": {
+          "enum": [
+            "p2g.temporal_graph_manifest.v1",
+            "p2g.temporal_flow_bundle_manifest.v1"
+          ]
+        },
+        "manifest_logical_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_file_sha256": {"$ref": "#/$defs/sha256"},
+        "audit_file_sha256": {"$ref": "#/$defs/sha256"},
+        "sha256sums_file_sha256": {"$ref": "#/$defs/sha256"},
+        "temporal_eligible": {"type": "boolean"}
+      }
+    },
+    "role": {"const": "train"},
+    "initialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "config",
+        "config_id",
+        "footprint_config",
+        "footprint_config_id",
+        "allocation_operator",
+        "allocation_config",
+        "allocation_config_id",
+        "reference_frame_interval_seconds",
+        "sequence_start_seconds",
+        "sequence_end_seconds",
+        "operator_sources"
+      ],
+      "properties": {
+        "operator": {"const": "one_gaussian_per_track_carrier_seed_v1"},
+        "config": {"type": "object"},
+        "config_id": {"type": "string", "minLength": 1},
+        "footprint_config": {"type": "object"},
+        "footprint_config_id": {"type": "string", "minLength": 1},
+        "allocation_operator": {"const": "atomic_one_per_carrier_reservation_v1"},
+        "allocation_config": {"type": "object"},
+        "allocation_config_id": {"type": "string", "minLength": 1},
+        "reference_frame_interval_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "sequence_start_seconds": {"type": "number"},
+        "sequence_end_seconds": {"type": "number"},
+        "operator_sources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "carrier_initialization",
+            "initialization",
+            "initialization_bundle",
+            "geometry"
+          ],
+          "properties": {
+            "carrier_initialization": {"$ref": "#/$defs/source_file"},
+            "initialization": {"$ref": "#/$defs/source_file"},
+            "initialization_bundle": {"$ref": "#/$defs/source_file"},
+            "geometry": {"$ref": "#/$defs/source_file"}
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "carrier_rows",
+        "carrier_sample_rows",
+        "footprint_view_rows",
+        "allocation_rows",
+        "incomplete_proposal_rows",
+        "required_base_gaussians",
+        "allocated_base_gaussians",
+        "reserved_extra_gaussians",
+        "budget_shortfall"
+      ],
+      "properties": {
+        "carrier_rows": {"type": "integer", "minimum": 1},
+        "carrier_sample_rows": {"type": "integer", "minimum": 1},
+        "footprint_view_rows": {"type": "integer", "minimum": 0},
+        "allocation_rows": {"type": "integer", "minimum": 1},
+        "incomplete_proposal_rows": {"type": "integer", "minimum": 0},
+        "required_base_gaussians": {"type": "integer", "minimum": 1},
+        "allocated_base_gaussians": {"type": "integer", "minimum": 0},
+        "reserved_extra_gaussians": {"type": "integer", "minimum": 0},
+        "budget_shortfall": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["carrier_proposals", "carrier_samples", "footprint_views", "allocation"],
+      "properties": {
+        "carrier_proposals": {"$ref": "#/$defs/table"},
+        "carrier_samples": {"$ref": "#/$defs/table"},
+        "footprint_views": {"$ref": "#/$defs/table"},
+        "allocation": {"$ref": "#/$defs/table"}
+      }
+    },
+    "integrity_status": {"const": "PASS"},
+    "base_reservation_status": {"enum": ["PASS", "INCOMPLETE"]},
+    "initialization_status": {"const": "INCOMPLETE"},
+    "trainer_eligible": {"const": false},
+    "gaussian_tensor_present": {"const": false},
+    "limitations": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "logical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schema", "row_count", "file_sha256", "logical_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "schema": {"type": "string", "minLength": 1},
+        "row_count": {"type": "integer", "minimum": 0},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "logical_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

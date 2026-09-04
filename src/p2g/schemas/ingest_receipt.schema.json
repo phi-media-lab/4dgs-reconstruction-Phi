@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.local/schemas/ingest_receipt.v1.json",
+  "title": "Pixel4DGS ingest receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_utc",
+    "dataset_id",
+    "adapter",
+    "status",
+    "source_root",
+    "strict_runtime_requested",
+    "runtime_identity_status",
+    "runtime_identity_sha256",
+    "git_head",
+    "git_worktree_sha256",
+    "git_dirty",
+    "source_bindings_logical_sha256",
+    "source_verification_complete",
+    "observation_manifest_logical_sha256",
+    "role_inventory_logical_sha256",
+    "observation_count",
+    "role_counts",
+    "source_audit_status",
+    "observation_audit_status",
+    "raw_video_hashes_verified",
+    "processed_image_hashes_verified",
+    "sample_plan_logical_sha256",
+    "claim_boundary"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.ingest_receipt.v1"},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "adapter": {"const": "selfcap_hair_r237_v1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "source_root": {"type": "string", "minLength": 1},
+    "strict_runtime_requested": {"type": "boolean"},
+    "runtime_identity_status": {"enum": ["PASS", "FAIL"]},
+    "runtime_identity_sha256": {"$ref": "#/$defs/sha256"},
+    "git_head": {
+      "anyOf": [
+        {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        {"type": "null"}
+      ]
+    },
+    "git_worktree_sha256": {
+      "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    },
+    "git_dirty": {"type": ["boolean", "null"]},
+    "source_bindings_logical_sha256": {"$ref": "#/$defs/sha256"},
+    "source_verification_complete": {"type": "boolean"},
+    "observation_manifest_logical_sha256": {"$ref": "#/$defs/sha256"},
+    "role_inventory_logical_sha256": {"$ref": "#/$defs/sha256"},
+    "observation_count": {"type": "integer", "minimum": 1},
+    "role_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "source_audit_status": {"enum": ["PASS", "FAIL"]},
+    "observation_audit_status": {"enum": ["PASS", "FAIL"]},
+    "raw_video_hashes_verified": {"type": "boolean"},
+    "processed_image_hashes_verified": {"type": "boolean"},
+    "sample_plan_logical_sha256": {"$ref": "#/$defs/sha256"},
+    "claim_boundary": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pixel4dgs.dev/schemas/sealed_quality_gate.v1.schema.json",
+  "title": "Pixel4DGS preregistered sealed quality gate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol",
+    "quality",
+    "policy",
+    "claim_boundary",
+    "gate_id"
+  ],
+  "properties": {
+    "schema_version": {"const": "p2g.sealed_quality_gate.v1"},
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recipe", "profile", "dataset", "candidate", "metrics"],
+      "properties": {
+        "recipe": {"$ref": "#/$defs/recipeFile"},
+        "profile": {"$ref": "#/$defs/inputFile"},
+        "dataset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dataset_id",
+            "observation_manifest_sha256",
+            "diagnostic",
+            "sealed"
+          ],
+          "properties": {
+            "dataset_id": {"type": "string", "minLength": 1},
+            "observation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+            "diagnostic": {"$ref": "#/$defs/partition"},
+            "sealed": {"$ref": "#/$defs/partition"}
+          }
+        },
+        "candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["final_step", "gaussian_count", "max_sh_degree"],
+          "properties": {
+            "final_step": {"type": "integer", "minimum": 1},
+            "gaussian_count": {"type": "integer", "minimum": 1},
+            "max_sh_degree": {"type": "integer", "minimum": 0, "maximum": 3}
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["psnr_equation", "ssim_equation", "ssim_padding", "aggregation"],
+          "properties": {
+            "psnr_equation": {"const": "p2g.psnr_rgb_unit_range.v1"},
+            "ssim_equation": {"const": "p2g.gaussian_ssim_rgb_unit_range.v1"},
+            "ssim_padding": {"enum": ["same", "valid"]},
+            "aggregation": {"const": "arithmetic_mean_of_per_observation_scores_v1"}
+          }
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["diagnostic", "sealed"],
+      "properties": {
+        "diagnostic": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["minimum_mean"],
+          "properties": {"minimum_mean": {"$ref": "#/$defs/metricPair"}}
+        },
+        "sealed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["anchor_mean", "maximum_regression", "minimum_mean"],
+          "properties": {
+            "anchor_mean": {"$ref": "#/$defs/metricPair"},
+            "maximum_regression": {"$ref": "#/$defs/nonnegativeMetricPair"},
+            "minimum_mean": {"$ref": "#/$defs/metricPair"}
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sealed_use",
+        "tuning_allowed",
+        "checkpoint_selection_allowed",
+        "write_once_output",
+        "publish_failure_receipt"
+      ],
+      "properties": {
+        "sealed_use": {"const": "single_post_freeze_evaluation"},
+        "tuning_allowed": {"const": false},
+        "checkpoint_selection_allowed": {"const": false},
+        "write_once_output": {"const": true},
+        "publish_failure_receipt": {"const": true}
+      }
+    },
+    "claim_boundary": {"type": "string", "minLength": 1},
+    "gate_id": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "safeFile": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "inputFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "bytes", "sha256"],
+      "properties": {
+        "file": {"$ref": "#/$defs/safeFile"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "recipeFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "bytes", "sha256", "recipe_id"],
+      "properties": {
+        "file": {"$ref": "#/$defs/safeFile"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "recipe_id": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "partition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["camera_ids", "observation_count"],
+      "properties": {
+        "camera_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+        },
+        "observation_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "metricPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["psnr", "ssim"],
+      "properties": {
+        "psnr": {"type": "number"},
+        "ssim": {"type": "number", "minimum": -1, "maximum": 1}
+      }
+    },
+    "nonnegativeMetricPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["psnr", "ssim"],
+      "properties": {
+        "psnr": {"type": "number", "minimum": 0},
+        "ssim": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}
