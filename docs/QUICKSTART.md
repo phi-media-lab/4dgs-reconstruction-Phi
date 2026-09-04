@@ -230,3 +230,45 @@ It does not by itself prove convergence, throughput, unseen-view quality, or
 permission to redistribute the input, weights, trained asset, or preview. See
 [reproducibility](REPRODUCIBILITY.md) for the evidence levels and
 [troubleshooting](TROUBLESHOOTING.md) for common failures.
+
+## 6. Hand a compatible asset to the interactive Viewer
+
+This optional path starts only after a real run has exported an AssetBundle.
+The fixture smoke check in section 1 does not produce one. The model must have
+been trained with settings equivalent to the explicit
+[`examples/viewer-interop/profile.toml`](../examples/viewer-interop/profile.toml)
+representation settings, and asset publication must use
+`default_sh_degree = 3`; an already exported transient-only or lower-degree
+model cannot be made compatible by changing its metadata.
+
+Verify the bundle and bind a reviewed trajectory:
+
+```bash
+p2g asset verify ASSET --output ASSET_VERIFICATION.json
+p2g camera-path bind ASSET \
+  --trajectory TRAJECTORY.json \
+  --output CAMERA_PATH.json
+```
+
+In a separate checkout of
+[4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi), run its
+consumer-owned converter. `PHI_EXPLICIT_ASSET` must not already exist:
+
+```bash
+HIP_VISIBLE_DEVICES=-1 ROCR_VISIBLE_DEVICES=-1 CUDA_VISIBLE_DEVICES=-1 \
+  python3 tools/convert_p2g_asset.py \
+  ASSET CAMERA_PATH.json PHI_EXPLICIT_ASSET \
+  --camera-frame 0 \
+  --name scene-name
+
+HIP_VISIBLE_DEVICES=-1 ROCR_VISIBLE_DEVICES=-1 CUDA_VISIBLE_DEVICES=-1 \
+  python3 tools/validate_asset.py PHI_EXPLICIT_ASSET/manifest.json
+```
+
+These commands are CPU-only. Move only the converted serving asset to the AMD
+Linux renderer; the training run, source pixels and checkpoint are not Player
+inputs. The selected camera-path frame becomes the initial interactive camera;
+the current Viewer does not automatically replay the complete imported path.
+See [Viewer interoperability](VIEWER_INTEROP.md) before treating a successful
+structural conversion as image-parity, quality, stability, or redistribution
+evidence.

@@ -1,0 +1,102 @@
+schema_version = "p2g.portable_profile.v1"
+
+[color_correction]
+learning_rate = 0.001
+mode = "off"
+regularization = 0.05
+start = 15000
+
+[data]
+downscale = 1
+eval_roles = ["diagnostic"]
+image_cache_size = 8
+train_roles = ["train"]
+
+[initialization]
+duration_max_seconds = 1.0
+duration_min_seconds = 0.0016666666666666668
+format = "p2g_safetensors"
+persistence_initial_logit = -6.0
+sh_degree = 3
+time_offset_seconds = 0.0
+
+[loss]
+gate = 0.0
+l1 = 0.8
+lpips = 0.0
+opacity = 0.001
+persistence = 0.0
+scale = 0.0001
+ssim = 0.2
+ssim_backend = "torch"
+ssim_padding = "same"
+
+[model]
+gate_logit_scale = 20.0
+persistence = "learned"
+
+[optimizer]
+beta1 = 0.9
+beta2 = 0.999
+eps = 1e-15
+
+[optimizer.lr_final_factors]
+means = 0.01
+velocities = 0.01
+
+[optimizer.lrs]
+center_times = 0.00016
+duration_logits = 0.005
+log_scales = 0.005
+means = 0.00016
+opacity_logits = 0.05
+persistence_logits = 0.001
+quaternions = 0.001
+sh0 = 0.0025
+sh_rest = 0.000125
+velocities = 0.0016
+
+[renderer]
+backend = "gsplat_rocm"
+background = [0.0, 0.0, 0.0]
+clamp_rgb = true
+eps2d = 0.3
+far_plane = 10000000000.0
+near_plane = 0.01
+packed = true
+radius_clip = 0.0
+require_gfx942 = true
+tile_size = 8
+
+[training]
+checkpoint_every = 1000
+deterministic = true
+device = "cuda"
+evaluate_every = 1000
+iterations = 30000
+log_every = 10
+sampling = "shuffled_epoch"
+seed = 42
+sh_degree_interval = 1000
+
+[training.relocation]
+every = 100
+mode = "off"
+opacity_threshold = 0.005
+start = 600
+stop = 25000
+
+[training.screen_guard]
+alpha_fraction_threshold = 0.1
+alpha_tolerance = 0.0001
+bisection_iterations = 16
+combined_alpha_mean_maximum = 0.05
+every = 100
+frame_ids = [0, 30, 59]
+maximum_candidates_per_observation = 64
+mode = "off"
+near_plane_multiple = 10.0
+solo_alpha_mean_maximum = 0.25
+start = 100
+stop = 30000
+tile_coverage_minimum = 0.9

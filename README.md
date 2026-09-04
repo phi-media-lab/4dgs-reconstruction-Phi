@@ -13,12 +13,21 @@ from an explicit moving-camera path.
 > terms and are not bundled. See
 > [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
+Pixel4DGS is the asset-production half of a two-repository system. Its sister
+project, [4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi),
+converts a deliberately narrow Pixel4DGS AssetBundle profile into its native
+explicit format and serves the result from an AMD Linux renderer to a thin
+browser client. The repositories meet only at versioned, hash-closed inference
+artifacts; neither is a source-tree or runtime dependency of the other.
+
 ## Start here
 
 - [Quickstart](docs/QUICKSTART.md): install the CPU review environment and run
   the bounded fixture-to-prepare smoke path.
 - [Architecture](docs/ARCHITECTURE.md): understand the pixel-to-4DGS data flow,
   continuous-time representation, optimization, and runtime boundaries.
+- [Viewer interoperability](docs/VIEWER_INTEROP.md): produce the supported
+  AssetBundle profile and hand it to the separate interactive Viewer.
 - [Documentation map](docs/README.md): find the detailed mechanism, MI300X,
   reproducibility, troubleshooting, and provenance guides.
 - [Release process](docs/RELEASE_PROCESS.md): reproduce the no-publish archive
@@ -51,9 +60,29 @@ calibrated multi-view videos
         -> ProposalCollection
         -> GaussianInitialization
         -> MI300X 4DGS training
-        -> AssetBundle
-        -> evaluate / inspect / render camera path
+        -> AssetBundle + bound camera path
+             |-> Pixel4DGS render-video on MI300X -> offline moving-camera video
+             `-> Viewer CPU bridge -> explicit-v1 -> AMD Linux interactive Player
+                                                    -> H.264 / WebRTC -> browser
 ```
+
+The Viewer path has been exercised end to end with a 499,980-Gaussian SH3
+real-scene asset: deterministic offline conversion, AMD Vulkan rendering,
+VA-API H.264 encoding, WebRTC presentation, and browser orbit/zoom control all
+completed. The authorized rendered preview is published by the
+[Viewer repository](https://github.com/phi-media-lab/4dgs-viewer-Phi). This is
+evidence for the artifact and serving hand-off; it is not a claim that every
+AssetBundle is compatible, that the current source release has reproduced that
+training run, or that cross-renderer pixel parity and long-duration stability
+have passed.
+
+The current Viewer bridge requires learned persistence, SH degree 3, the
+`p2g.gsplat_rocm.v1` classic raster profile with `radius_clip = 0`, clamped RGB,
+and a camera path bound to the same bundle. Pixel4DGS intentionally retains
+broader training choices and does not change its global defaults to satisfy one
+consumer. Use the explicit
+[Viewer interoperability profile](examples/viewer-interop/profile.toml) when
+that downstream target is required.
 
 The `p2g` command surface includes a `run`/`status` orchestrator for the six
 reconstruction stages `prepare`, `propose`, `initialize`, `train`, `evaluate`,
@@ -167,6 +196,8 @@ The repository contains:
 - hash-closed local resume checkpoints using restricted tensor-state loading,
   kept explicitly separate from distributable AssetBundles;
 - portable asset, asset-independent camera-trajectory, and bound camera-path schemas;
+- an explicit, load-tested Viewer-interoperability profile plus a documented
+  CPU-only hand-off to the sister project's fail-closed converter;
 - project-owned analytic geometry tests;
 - a hash-pinned MI300X renderer and fused-SSIM source-build recipe.
 

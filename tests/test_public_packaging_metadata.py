@@ -152,6 +152,7 @@ def test_user_facing_packaging_docs_have_no_internal_machine_dependency() -> Non
         ROOT / "docs/SEALED_EVALUATION.md",
         ROOT / "docs/TRAINING_CONTRACT.md",
         ROOT / "docs/TROUBLESHOOTING.md",
+        ROOT / "docs/VIEWER_INTEROP.md",
     )
     combined = "\n".join(path.read_text(encoding="utf-8") for path in paths)
 

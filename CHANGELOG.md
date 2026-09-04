@@ -9,6 +9,8 @@
   ROCm/gsplat renderer.
 - Added calibrated observation, tensor-cache, proposal, initialization,
   checkpoint, evaluation, AssetBundle, camera-path, and render contracts.
+- Added a complete Viewer-interoperable MI300X profile and documented the
+  artifact hand-off to the separate 4DGS Viewer Phi serving project.
 - Added offline Charge and SelfCap-style input adapters without bundled media.
 - Added deterministic synthetic fixtures and a complete CPU contract suite.
 - Added reproducible wheel/sdist checks, source hygiene checks, Apache-2.0

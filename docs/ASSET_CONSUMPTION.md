@@ -1,4 +1,4 @@
-# Inspecting, verifying, and rendering an AssetBundle
+# Inspecting, verifying, and consuming an AssetBundle
 
 An `AssetBundle` is the portable output of the Pixel4DGS training pipeline. It
 contains exactly three files: a Safetensors model, semantic metadata, and a
@@ -107,6 +107,34 @@ existing-output failures return status 2 without replacing any artifact.
 The source distribution also retains the standalone tools for environments
 that intentionally do not install console scripts; they implement the same
 artifact boundary and never consult training-run state.
+
+## Interactive serving through 4DGS Viewer Phi
+
+The separate
+[4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi) project is
+an additional consumer, not an alternative training path. Its CPU-only bridge
+converts a supported `p2g.asset_bundle.v1` and bound camera path into
+`phi.4dgs.explicit.v1`; an AMD Linux Player then renders that asset and sends
+H.264 over WebRTC to a thin browser receiver.
+
+The two render paths have different behavior:
+
+| Consumer | Camera behavior | GPU/runtime |
+|---|---|---|
+| `p2g render-video` | renders every frame of the supplied path into an offline video | MI300X, PyTorch/ROCm, pinned gsplat |
+| 4DGS Viewer Phi | selects one path frame as initial calibration, then accepts interactive orbit/zoom/time controls | AMD Linux, Vulkan/RADV, DMA-BUF, VA-API |
+
+The Viewer does not accept every valid Pixel4DGS asset. Its current profile
+requires learned persistence, SH3 as both maximum and default degree, clamped
+RGB, `radius_clip = 0`, the `p2g.gsplat_rocm.v1` ABI, and the documented camera
+conventions. The full producer-side checklist and exact commands are in
+[Viewer interoperability](VIEWER_INTEROP.md); the consumer remains the
+executable authority and fails closed on unsupported input.
+
+Conversion never changes or appends to the AssetBundle. Its output must be a
+new directory, remains governed by the source rights declaration, and should
+stay outside the source tree unless its redistribution has been independently
+authorized.
 
 ## Separation from training verification
 

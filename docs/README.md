@@ -15,6 +15,7 @@ Start with the smallest document that answers the current question:
 | Understand training and population control | [Training](TRAINING_CONTRACT.md) and [relocation](RELOCATION_CONTRACT.md) |
 | Run or verify a preregistered sealed gate | [Sealed quality evaluation](SEALED_EVALUATION.md) |
 | Verify or render a portable asset | [Asset consumption](ASSET_CONSUMPTION.md) |
+| Serve a compatible asset with the sister Viewer | [Viewer interoperability](VIEWER_INTEROP.md) |
 | Reproduce and interpret evidence | [Reproducibility](REPRODUCIBILITY.md) |
 | Build and verify release archives without publishing | [Release process](RELEASE_PROCESS.md) |
 | Diagnose a failed command | [Troubleshooting](TROUBLESHOOTING.md) |

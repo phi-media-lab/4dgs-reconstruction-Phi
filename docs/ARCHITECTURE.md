@@ -32,12 +32,28 @@ RGB files + calibration + timestamps + roles
                 asset export
                     |
                     v
-        Safetensors AssetBundle + trajectory -- bind --> camera path -- render --> video
+             Safetensors AssetBundle
+                    +
+        reviewed trajectory -- bind --> bound camera path
+                                      |
+                     +----------------+----------------+
+                     |                                 |
+                     v                                 v
+          Pixel4DGS render-video             Viewer CPU bridge
+                     |                                 |
+                     v                                 v
+        offline moving-camera video       phi.4dgs.explicit.v1
+                                                       |
+                                                       v
+                                        AMD Linux Player -- WebRTC --> browser
 ```
 
-Every arrow is implemented by the same library function used by its standalone
-CLI command. `p2g run` only sequences those functions, records their receipts,
-and resumes verified outputs; it does not contain an alternate hidden pipeline.
+Every Pixel4DGS arrow through asset export and offline rendering is implemented
+by the same library function used by its standalone CLI command. `p2g run` only
+sequences the six reconstruction stages, records their receipts, and resumes
+verified outputs; it does not contain an alternate hidden pipeline. The Viewer
+branch begins at the published artifact boundary and is implemented entirely
+by the sister repository.
 
 | Stage | Main input | Main output | MI300X work |
 |---|---|---|---|
@@ -48,6 +64,15 @@ and resumes verified outputs; it does not contain an alternate hidden pipeline.
 | `evaluate` | run/checkpoint and diagnostic observations | evaluation receipt | yes |
 | `asset export` | completed training run and rights assertions | `p2g.asset_bundle.v1` | no |
 | `render-video` | AssetBundle and camera path | video and render receipt | yes |
+
+The optional Viewer branch is implemented by the separate
+[4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi)
+repository, not by another hidden Pixel4DGS stage. Its CPU-only bridge accepts
+the strict producer profile documented in
+[Viewer interoperability](VIEWER_INTEROP.md), converts it to
+`phi.4dgs.explicit.v1`, and hands that asset to an AMD Linux Vulkan renderer.
+The browser is a thin H.264/WebRTC receiver and never owns the Gaussian
+payload.
 
 ## Representation
 
@@ -119,6 +144,12 @@ and the registered public-source native build. CPU fake-provider tests prove
 argument mapping and failure behavior, not native-kernel quality. Native
 numerical checks and a preregistered full-scene quality gate remain separate.
 
+The sister Viewer has a different runtime boundary. Its bridge is CPU-only;
+its reference Player uses Rust, wgpu/WGSL, Vulkan/RADV, linear DMA-BUF,
+VA-API, GStreamer, and WebRTC on an AMD Linux graphics node. ROCm and the
+training workspace are not dependencies of that serving process. Conversely,
+the Viewer is not a Pixel4DGS training or offline-evaluation dependency.
+
 ## Artifact and trust boundaries
 
 Stage outputs are append-oriented and bind inputs by SHA-256. Terminal manifests
@@ -126,6 +157,11 @@ are published last, and a changed input or partial output cannot be silently
 adopted. Training checkpoints contain optimizer and RNG state and are trusted
 local resume artifacts. External exchange uses only JSON plus Safetensors in an
 AssetBundle; the renderer does not need the training workspace or source images.
+
+A Viewer conversion creates a new, hash-bound serving asset and copies the
+source rights declaration into provenance; it cannot grant new redistribution
+rights. Real-scene bundles, converted payloads, frames, and private receipts
+remain outside both source trees unless separately authorized.
 
 Source permission, dependency licenses, model-weight terms, input-data rights,
 and derived-asset rights are independent. A mechanically valid artifact never
@@ -142,3 +178,4 @@ creates a license grant.
 - [Relocation](RELOCATION_CONTRACT.md)
 - [Renderer](RENDERER_CONTRACT.md)
 - [Asset consumption](ASSET_CONSUMPTION.md)
+- [Viewer interoperability](VIEWER_INTEROP.md)
