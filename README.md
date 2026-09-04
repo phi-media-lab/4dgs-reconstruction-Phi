@@ -6,15 +6,16 @@
 [![Release archive checks](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml)
 
 Pixel4DGS is an architecture-first, trainable pixel-to-4D-Gaussian
-reconstruction system developed by Phi Media Lab in collaboration with AMD.
+reconstruction system developed by Phi Media Lab for AMD Instinct MI300X and
+the ROCm software ecosystem.
 It turns synchronized, calibrated multi-camera RGB video into an explicit,
 continuous-time Gaussian scene that can be inspected, evaluated, exported,
 and rendered from a moving camera.
 
-This repository is the asset-production half of a two-repository AMD system.
-AMD Instinct MI300X with ROCm owns correspondence, optimization, evaluation,
-and offline rendering. The sister
-[4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi) project
+This repository is the asset-production half of a two-repository system built
+around AMD compute, graphics, and media hardware. AMD Instinct MI300X with
+ROCm owns correspondence, optimization, evaluation, and offline rendering. The
+sister [4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi) project
 converts the resulting inference asset and serves it from an AMD Radeon Linux
 node through Vulkan, hardware H.264, and WebRTC. The repositories share a
 versioned, hash-closed artifact—not a source tree, Python environment, or
@@ -66,10 +67,11 @@ not hide a second reconstruction path. Training ends at a portable inference
 asset. Interactive delivery begins only after that asset crosses into the
 Viewer repository.
 
-## AMD hardware and software co-design
+## AMD hardware and software ecosystem
 
-The design gives compute and delivery different AMD hardware roles instead of
-forcing both workloads into a lowest-common-denominator runtime.
+The system assigns compute and delivery to different roles within the AMD
+hardware and software ecosystem instead of forcing both workloads into a
+lowest-common-denominator runtime.
 
 | System concern | Reference design | Consequence |
 | --- | --- | --- |

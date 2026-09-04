@@ -6,11 +6,12 @@
 [![发行归档检查](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml)
 
 Pixel4DGS 是一个架构优先、可训练的 pixel-to-4D-Gaussian 重建系统，由
-Phi Media Lab 与 AMD 合作开发。它把同步、标定的多相机 RGB 视频转换为显式的
-连续时间 Gaussian 场景；该场景可以被检查、评估、导出，并从移动相机视角渲染。
+Phi Media Lab 面向 AMD Instinct MI300X 与 ROCm 软件生态开发。它把同步、
+标定的多相机 RGB 视频转换为显式的连续时间 Gaussian 场景；该场景可以被检查、
+评估、导出，并从移动相机视角渲染。
 
-本仓库是 AMD 双仓库系统中的资产生产端。AMD Instinct MI300X 与 ROCm 负责
-匹配、优化、评估和离线渲染；姊妹项目
+本仓库是基于 AMD 计算、图形与媒体硬件的双仓库系统中的资产生产端。
+AMD Instinct MI300X 与 ROCm 负责匹配、优化、评估和离线渲染；姊妹项目
 [4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi)
 把推理资产转换后，交给 AMD Radeon Linux 节点通过 Vulkan、硬件 H.264 和
 WebRTC 提供交互式服务。两个仓库只共享版本化、哈希闭合的资产，不共享源码树、
@@ -60,10 +61,10 @@ flowchart LR
 执行已经定义的 stage、验证输出和 resume receipt，不隐藏第二条重建路径。训练
 终止于可移植推理资产；交互式交付只在资产进入 Viewer 仓库后开始。
 
-## AMD 软硬件协同设计
+## AMD 软硬件生态
 
-系统为计算与交付分配了不同的 AMD 硬件职责，而不是把两类 workload 强行压入
-一个最低公共能力的运行时。
+系统在 AMD 软硬件生态内为计算与交付分配不同职责，而不是把两类 workload
+强行压入一个最低公共能力的运行时。
 
 | 系统关注点 | 参考设计 | 设计结果 |
 | --- | --- | --- |
