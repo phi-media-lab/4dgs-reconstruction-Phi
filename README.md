@@ -1,287 +1,240 @@
 # Pixel4DGS
 
-Pixel4DGS is a trainable, explicit pixel-to-4D-Gaussian pipeline designed for
-one AMD Instinct MI300X (`gfx942`). Its target input is synchronized,
-calibrated multi-camera RGB video; its target output is a portable
-`AssetBundle` that can be reloaded, queried at continuous times, and rendered
-from an explicit moving-camera path.
+[![CPU source and package checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml)
+[![Release archive checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml)
 
-> **Open-source alpha:** repository-owned source, documentation, and the
-> generated synthetic fixture are licensed under Apache-2.0; see
-> [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). External dependencies, model
-> weights, input data, trained assets, and rendered media retain separate
-> terms and are not bundled. See
-> [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Pixel4DGS is an architecture-first, trainable pixel-to-4D-Gaussian
+reconstruction system developed by Phi Media Lab in collaboration with AMD.
+It turns synchronized, calibrated multi-camera RGB video into an explicit,
+continuous-time Gaussian scene that can be inspected, evaluated, exported,
+and rendered from a moving camera.
 
-Pixel4DGS is the asset-production half of a two-repository system. Its sister
-project, [4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi),
-converts a deliberately narrow Pixel4DGS AssetBundle profile into its native
-explicit format and serves the result from an AMD Linux renderer to a thin
-browser client. The repositories meet only at versioned, hash-closed inference
-artifacts; neither is a source-tree or runtime dependency of the other.
+This repository is the asset-production half of a two-repository AMD system.
+AMD Instinct MI300X with ROCm owns correspondence, optimization, evaluation,
+and offline rendering. The sister
+[4DGS Viewer Phi](https://github.com/phi-media-lab/4dgs-viewer-Phi) project
+converts the resulting inference asset and serves it from an AMD Radeon Linux
+node through Vulkan, hardware H.264, and WebRTC. The repositories share a
+versioned, hash-closed artifact—not a source tree, Python environment, or
+training workspace.
 
-## Start here
+## System architecture
 
-- [Quickstart](docs/QUICKSTART.md): install the CPU review environment and run
-  the bounded fixture-to-prepare smoke path.
-- [Architecture](docs/ARCHITECTURE.md): understand the pixel-to-4DGS data flow,
-  continuous-time representation, optimization, and runtime boundaries.
-- [Viewer interoperability](docs/VIEWER_INTEROP.md): produce the supported
-  AssetBundle profile and hand it to the separate interactive Viewer.
-- [Documentation map](docs/README.md): find the detailed mechanism, MI300X,
-  reproducibility, troubleshooting, and provenance guides.
-- [Release process](docs/RELEASE_PROCESS.md): reproduce the no-publish archive
-  check and distinguish source-release checks from demo and quality claims.
-- [Changelog](CHANGELOG.md): see the initial alpha feature set.
+```mermaid
+flowchart LR
+    subgraph DATA["CPU · admitted data and geometry"]
+        OBS["Calibrated RGB observations<br/>camera · time · role"]
+        PREP["prepare<br/>audited tensor cache"]
+        INIT["initialize<br/>fixed-capacity Gaussians"]
+        OBS --> PREP
+    end
 
-## Scope
+    subgraph COMPUTE["AMD Instinct MI300X · gfx942 · ROCm"]
+        PROP["propose<br/>matching · rays · triangulation"]
+        TRAIN["train<br/>continuous-time 4DGS optimization"]
+        EVAL["evaluate<br/>role-isolated quality evidence"]
+        OFFLINE["render-video<br/>moving-camera preview"]
+        TRAIN --> EVAL
+    end
 
-The v0 contract is deliberately narrow:
+    subgraph ARTIFACT["Portable inference boundary · CPU"]
+        EXPORT["asset export<br/>p2g.asset_bundle.v1<br/>JSON + Safetensors"]
+        TRAJ["reviewed space-time trajectory"]
+        PATH["hash-bound camera path"]
+        EXPORT --> PATH
+        TRAJ --> PATH
+    end
 
-| Supported | Not claimed |
-|---|---|
-| Linux x86-64 | Windows or macOS |
-| One MI300X / `gfx942` | CUDA, other AMD GPUs, or multi-GPU |
-| CPython 3.12 | Other Python ABIs for GPU execution |
-| PyTorch 2.10.0 + ROCm 7.0 | Arbitrary Torch/ROCm combinations |
-| Synchronized, calibrated multi-view RGB | Monocular or uncalibrated video |
-| Offline-undistorted pinhole observations | Rolling shutter or train-time distortion |
-| Explicit linear motion and temporal activation | General video generation |
+    subgraph DELIVERY["Sister repository · AMD Radeon Linux"]
+        BRIDGE["CPU bridge<br/>phi.4dgs.explicit.v1"]
+        PLAYER["Vulkan/RADV Player<br/>VA-API · H.264 · WebRTC"]
+        BROWSER["thin browser receiver"]
+        BRIDGE --> PLAYER --> BROWSER
+    end
 
-FreeTimeGS++ and 3DGS-MCMC are research references, not runtime dependencies.
-Their source code is not included. Pixel4DGS implements population control
-independently and tests it against explicit project-owned contracts.
-
-## Intended pipeline
-
-```text
-calibrated multi-view videos
-        -> observation manifest
-        -> ProposalCollection
-        -> GaussianInitialization
-        -> MI300X 4DGS training
-        -> AssetBundle + bound camera path
-             |-> Pixel4DGS render-video on MI300X -> offline moving-camera video
-             `-> Viewer CPU bridge -> explicit-v1 -> AMD Linux interactive Player
-                                                    -> H.264 / WebRTC -> browser
+    PREP --> PROP --> INIT --> TRAIN
+    TRAIN --> EXPORT
+    PATH --> OFFLINE
+    PATH --> BRIDGE
 ```
 
-The Viewer path has been exercised end to end with a 499,980-Gaussian SH3
-real-scene asset: deterministic offline conversion, AMD Vulkan rendering,
-VA-API H.264 encoding, WebRTC presentation, and browser orbit/zoom control all
-completed. The authorized rendered preview is published by the
-[Viewer repository](https://github.com/phi-media-lab/4dgs-viewer-Phi). This is
-evidence for the artifact and serving hand-off; it is not a claim that every
-AssetBundle is compatible, that the current source release has reproduced that
-training run, or that cross-renderer pixel parity and long-duration stability
-have passed.
+The command-line stages and the top-level runner call the same library
+functions. `p2g run` sequences verified outputs and resume receipts; it does
+not hide a second reconstruction path. Training ends at a portable inference
+asset. Interactive delivery begins only after that asset crosses into the
+Viewer repository.
 
-The current Viewer bridge requires learned persistence, SH degree 3, the
-`p2g.gsplat_rocm.v1` classic raster profile with `radius_clip = 0`, clamped RGB,
-and a camera path bound to the same bundle. Pixel4DGS intentionally retains
-broader training choices and does not change its global defaults to satisfy one
-consumer. Use the explicit
-[Viewer interoperability profile](examples/viewer-interop/profile.toml) when
-that downstream target is required.
+## AMD hardware and software co-design
 
-The `p2g` command surface includes a `run`/`status` orchestrator for the six
-reconstruction stages `prepare`, `propose`, `initialize`, `train`, `evaluate`,
-and asset publication. It also exposes `doctor`, `camera-path bind`,
-`render-video`, `evaluate-sealed`, `verify-sealed`, `asset export`, `asset
-inspect`, `asset verify`, `fixture create`, and offline Charge and
-SelfCap-style data adapters.
-Command imports are lazy, so help, status, schema-level workflows, fixture
-generation, and asset inspection do not initialize a GPU runtime. The
-role-bound trainer and independently specified fixed-budget relocation
-mechanism are present and CPU contract tested. The alpha source license is not
-evidence of MI300X scene quality or performance.
+The design gives compute and delivery different AMD hardware roles instead of
+forcing both workloads into a lowest-common-denominator runtime.
 
-Generate and prepare a tiny, third-party-payload-free contract fixture without
-accessing a GPU:
+| System concern | Reference design | Consequence |
+| --- | --- | --- |
+| Reconstruction compute | One AMD Instinct MI300X, `gfx942` | The GPU ABI is admitted explicitly; v0 does not claim generic CUDA, multi-GPU, or arbitrary ROCm support |
+| Training runtime | Linux x86-64, CPython 3.12, PyTorch `2.10.0+rocm7.0`, HIP `7.0.51831` | Source, wheel identity, HIP runtime, and `gfx942` code objects are checked before native execution |
+| Differentiable rasterization | Pinned AMD Ecosystem gsplat source, float32, packed mode, `tile_size=8`, one camera, classic EWA, RGB or SH3 | The adapter fixes every renderer switch and rejects unqualified shapes, dtypes, devices, and ABIs |
+| Hot training path | Struct-of-arrays tensors, vectorized time materialization, memory-mapped observations, one packed raster call | No Python loop over Gaussians and no image or Gaussian transfer to the host in the materialization/raster path |
+| Population and memory | Fixed-capacity relocation with stable slot lineage | Quality can be redistributed without unbounded Gaussian growth or opaque allocator behavior |
+| Resource admission | AMD SMI/ROCm SMI observations plus `/dev/kfd` process identity and full-stage resource-window recording | Shared quality runs and exclusive performance runs have different, replayable admission semantics |
+| Interactive delivery | AMD Radeon, Linux `amdgpu`/DRM, Mesa RADV, Vulkan, DMA-BUF, VA-API, GStreamer, WebRTC | The Viewer renders and encodes without depending on ROCm, PyTorch, the dataset, or the optimizer |
 
-```bash
-p2g fixture create --output fixture
-p2g prepare fixture/observation_manifest.json --output runs/smoke/scene
-```
+The specialization is deliberate. Correctness is established at explicit
+boundaries—camera geometry, tensor layouts, native ABI, gradients, artifact
+hashes, and observation roles—before a result is treated as MI300X evidence.
+Portable CPU tests validate contracts and failure behavior; they are not
+presented as proof of native-kernel quality or scene-level performance.
 
-This proves input generation, schema/audit, and preparation connectivity only.
-It is deliberately too small to establish matching, training, visual-quality,
-or performance claims.
+See [MI300X runtime build](docs/MI300X_RUNTIME_BUILD.md),
+[renderer contract](docs/RENDERER_CONTRACT.md), and
+[MI300X preflight](docs/MI300X_PREFLIGHT_CONTRACT.md) for the exact qualified
+software stack and execution gates.
 
-The Charge adapter hashes rather than copies the selected RGB files, converts
-the empirically verified Blender camera-to-world convention into the public
-OpenCV world-to-camera convention, and keeps official train/test cameras in
-disjoint roles. The quickstart gives a fixed-revision `010_0050` Dense import
-example without bundling it. See the
-[quickstart](docs/QUICKSTART.md#2-import-a-local-charge-task)
-for the exact offline command and the
-[data contract](docs/DATA_CONTRACT.md#charge-v10-adapter) for the coordinate
-proof and claim boundary.
+## Reconstruction pipeline
 
-The SelfCap adapter materializes synchronized videos into ordinary RGB8 PNGs
-and a per-frame, per-camera observation manifest. It records source hashes,
-fractional synchronization, undistortion, the common valid crop, resize and
-quantization identities, and disjoint train/diagnostic/sealed roles. Source
-media and generated pixels stay outside the source distribution; see the
-[SelfCap adapter contract](docs/DATA_CONTRACT.md#selfcap-video-adapter).
+| Stage | Mechanism | Output | Execution surface |
+| --- | --- | --- | --- |
+| `prepare` | Validate camera, time, photometry, hashes, paths, and role isolation; materialize an append-only RGB tensor cache | `p2g.tensor_cache.v1` | CPU |
+| `propose` | Match train-only views, restore admitted pixel coordinates, construct rays, triangulate, and retain rejection evidence | Proposal collection | MI300X |
+| `initialize` | Select multi-view evidence and derive position, motion, scale, duration, appearance, and stable slot identity | `p2g.gaussian_initialization.v1` | CPU |
+| `train` | Materialize Gaussians at sampled time, rasterize, optimize declared losses, and relocate under a fixed budget | Hash-closed run and checkpoints | MI300X |
+| `evaluate` | Render diagnostic or explicitly admitted sealed observations without feeding them back into optimization | Evaluation receipt | MI300X |
+| `asset export` | Remove optimizer state and publish only portable inference tensors plus provenance | `p2g.asset_bundle.v1` | CPU |
+| `render-video` | Evaluate a bundle along a separately bound space-time camera trajectory | Video and render receipt | MI300X |
 
-For a real admitted scene, put all six reconstruction stages in one reviewed TOML plan and
-use a dedicated workspace:
+The input authority is an observation manifest, not a dataset-specific loader.
+The Charge adapter imports calibrated still-image tasks without copying source
+pixels. The SelfCap adapter materializes synchronized video into RGB8 PNGs and
+a **per-frame, per-camera observation manifest**, while recording
+synchronization, undistortion, crop, resize, quantization, and source hashes.
+Both adapters keep train, diagnostic, and sealed observations disjoint.
+
+## White-box 4DGS model
+
+Each Gaussian stores a reference mean, velocity, log scale, quaternion,
+opacity logit, spherical-harmonic appearance, center time, bounded duration,
+optional learned persistence, and stable runtime identity. At query time
+$t$:
+
+$$
+\boldsymbol{\mu}_i(t) = \boldsymbol{\mu}_i
+  + \boldsymbol{v}_i(t-c_i)
+$$
+
+$$
+g_i(t)=\exp\left[-\frac{1}{2}
+  \left(\frac{t-c_i}{\sigma_i}\right)^2\right], \qquad
+a_i(t)=p_i+(1-p_i)g_i(t)
+$$
+
+$$
+\alpha_i(t)=\operatorname{sigmoid}(o_i)\,a_i(t)
+$$
+
+Time therefore changes position and activation through named state; it is not
+hidden inside color, scale, or a frame-indexed neural decoder. Duration is
+bounded, quaternions are normalized, and log scales are exponentiated at
+materialization. A developer can inspect the exact Gaussian state presented to
+the rasterizer at any continuous time.
+
+One optimization step has a fixed order: sample a train observation,
+materialize, rasterize, compute named losses, backpropagate, reject invalid
+gradients, update parameters, and then execute scheduled population-control
+and screen-influence events. L1, Gaussian-window SSIM, LPIPS, PSNR, and each
+regularizer remain separately attributable in metrics and receipts.
+
+## Correctness invariants
+
+- **Role isolation.** Only `train` observations may affect proposals,
+  initialization, optimization, screen guards, early stopping, or checkpoint
+  selection. `diagnostic`, `sealed`, and `free_view` capabilities are distinct.
+- **Fail-closed native execution.** An unregistered Torch/ROCm/provider ABI,
+  GPU architecture, tensor layout, or raster option is rejected before kernel
+  launch.
+- **Fixed population.** Relocation reuses dead slots, preserves stable lineage,
+  and invalidates the corresponding optimizer rows explicitly.
+- **Hash-closed state.** Stage inputs and outputs bind their dependencies by
+  SHA-256; terminal manifests are published last, so partial output cannot be
+  silently resumed.
+- **Narrow trust boundary.** Checkpoints are local trusted resume state.
+  Exchange assets contain JSON and Safetensors only—never executable pickle,
+  source images, optimizer state, or an implicit training environment.
+- **Independent evidence.** Source CI, native numerical qualification,
+  full-scene reconstruction quality, Viewer conversion, and browser delivery
+  are separate claims with separate receipts.
+
+## Asset boundary and Viewer
+
+Pixel4DGS exports `p2g.asset_bundle.v1`; a camera trajectory is an independent
+artifact and becomes renderable only after it is hash-bound to that bundle.
+For the supported interop profile, the Viewer CPU bridge verifies the bundle,
+requires learned persistence, SH degree 3, classic rasterization with
+`radius_clip = 0`, and converts it deterministically to
+`phi.4dgs.explicit.v1`.
+
+The hand-off has been exercised with a 499,980-Gaussian SH3 real-scene asset:
+offline conversion, AMD Vulkan rendering, VA-API H.264 encoding, WebRTC
+presentation, and browser camera/time interaction completed. The authorized
+preview is published by the
+[Viewer repository](https://github.com/phi-media-lab/4dgs-viewer-Phi).
+This establishes the artifact and serving path for that asset; it is not a
+claim of universal bundle compatibility, reproduction of that training run by
+the current public source, cross-renderer pixel parity, or long-duration
+service stability.
+
+See [Viewer interoperability](docs/VIEWER_INTEROP.md) and the checked-in
+[Viewer profile](examples/viewer-interop/profile.toml).
+
+## Current validated envelope
+
+| Established by this repository | Deliberately separate or not yet claimed |
+| --- | --- |
+| Complete CPU contract suite, lint, typing, clean committed source-boundary checks, and reproducible wheel/sdist checks | CPU CI as evidence of MI300X throughput or visual quality |
+| Full prepare → propose → initialize → train → evaluate → export implementation with stage receipts and exact resume semantics | Support for uncalibrated/monocular input, other GPU ABIs, or multi-GPU training |
+| Immutable MI300X native-source build recipes and forward/gradient qualification for the admitted raster profile | A bundled real-scene dataset, external matcher/LPIPS weights, trained asset, or benchmark result |
+| Offline AssetBundle inspection, verification, camera-path binding, and moving-camera rendering | Automatic redistribution rights for input media or derived assets |
+| A tested narrow bridge into the sister AMD Radeon Viewer | Universal conversion, cross-renderer parity, production networking, or multi-user serving |
+
+The supported reconstruction envelope is synchronized, calibrated,
+offline-undistorted pinhole RGB; one visible MI300X; float32; one camera per
+raster batch; and explicit linear motion plus temporal activation. The narrow
+surface is a reproducibility choice, not a statement that broader inputs or
+hardware are impossible.
+
+## Run and study the system
+
+A real admitted scene is driven by one reviewed TOML plan:
 
 ```bash
 p2g run pipeline.toml --workspace runs/scene-a
 p2g status runs/scene-a
 ```
 
-The stage-scoped plan history, fixed stage order, MI300X admission windows,
-workspace layout, quarantine, and exact resume semantics are documented in
-[the runnable pipeline guide](docs/PIPELINE_ORCHESTRATION.md).
+Command discovery, CPU-only fixture setup, data import, native runtime setup,
+stage recovery, and asset rendering live in the focused guides rather than in
+this architecture overview.
 
-The staged [CPU workflow](.github/workflows/cpu-ci.yml) runs the complete CPU
-suite with an explicit CPU-only Torch wheel and verifies the committed source
-boundary. The separate
-[release archive workflow](.github/workflows/release-check.yml) reproducibly
-builds, compares, and smoke-installs the wheel and sdist without uploading or
-publishing them. Development expectations and the alpha reporting boundary are
-recorded in [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+| Question | Document |
+| --- | --- |
+| How do data, optimization, artifacts, and the Viewer fit together? | [Architecture](docs/ARCHITECTURE.md) |
+| How do I run the smallest public workflow? | [Quickstart](docs/QUICKSTART.md) |
+| What exactly is admitted as input? | [Data contract](docs/DATA_CONTRACT.md) |
+| How is the 4DGS state represented and trained? | [Model](docs/MODEL_CONTRACT.md) · [training](docs/TRAINING_CONTRACT.md) · [relocation](docs/RELOCATION_CONTRACT.md) |
+| What is the exact MI300X runtime? | [Runtime build](docs/MI300X_RUNTIME_BUILD.md) · [renderer](docs/RENDERER_CONTRACT.md) · [preflight](docs/MI300X_PREFLIGHT_CONTRACT.md) |
+| How are stages resumed and audited? | [Pipeline orchestration](docs/PIPELINE_ORCHESTRATION.md) · [reproducibility](docs/REPRODUCIBILITY.md) |
+| How is an asset verified, rendered, or handed to the Viewer? | [Asset consumption](docs/ASSET_CONSUMPTION.md) · [Viewer interoperability](docs/VIEWER_INTEROP.md) |
+| Where is every detailed contract? | [Documentation map](docs/README.md) |
 
-## Implemented components
+## Open-source boundary
 
-The repository contains:
+Repository-owned source, documentation, and the generated synthetic fixture
+are Apache-2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). External native
+libraries, model weights, datasets, trained assets, and rendered media retain
+their own terms and are not bundled. FreeTimeGS++ and 3DGS-MCMC are research
+references, not runtime dependencies; Pixel4DGS implements and tests its own
+population-control contracts.
 
-- canonical JSON hashing and atomic artifact publication primitives;
-- a deterministic calibrated multiview fixture generator with no downloaded
-  media, weights, or learned output;
-- an offline Charge v1.0 adapter that hash-binds local RGB inputs, reindexes
-  source frames and preserves disjoint train, diagnostic, and sealed cameras;
-- an offline SelfCap video adapter that performs hash-bound fractional-time
-  sampling, undistortion, common-ROI cropping, RGB8 PNG materialization, and
-  per-observation manifest generation;
-- the v2 calibrated observation schema and semantic audit;
-- an append-only, dataset-neutral `prepare` stage that converts admitted RGB8
-  observations into the hash-bound public NumPy tensor cache;
-- path-containment, image hash/header, camera geometry, synchronization, and
-  train/diagnostic/sealed role-isolation checks;
-- separate portable profiles, scene path inputs, and resolved run records with
-  deterministic TOML serialization;
-- an audited RGB8 loader plus a manifest-bound NumPy mmap cache whose camera,
-  timestamp, dtype, shape, and file hashes are checked before training;
-- an independently owned manifest-and-tensor-cache-to-point-proposal path that
-  excludes diagnostic/sealed/free-view observations before camera pairing,
-  records canonical role admission, exposes two-view geometry and rejection
-  planes, and uses an optional hash-pinned RoMa provider that never downloads
-  or bundles weights;
-- a hash-bound proposal-to-Gaussian initializer with paired multi-view
-  evidence sampling, explicit KNN motion/scale rules, physical duration
-  calibration, and a strict alias-free Safetensors output;
-- a train-only, hash-bound optimization orchestrator with sparse GPU-scalar
-  diagnostics, checkpoint-aligned evaluation, checkpoint-exact resume, a
-  completion receipt, and a separately retryable AssetBundle export;
-- a digest-bound top-level runner that connects all six reconstruction stages,
-  records preflight and continuously sampled KFD windows, reuses only
-  stage-compatible work, and atomically quarantines invalid partial outputs;
-- an independent fixed-budget relocation controller with explicit source
-  utility, capacity, peak/far-time alpha conservation, projected-alpha-mass
-  correction, stable slot lineage, and precise optimizer-state invalidation;
-- a strict Safetensors-only Gaussian initialization boundary and an explicit,
-  differentiable continuous-time Gaussian model;
-- explicit L1, Gaussian-window SSIM, LPIPS, PSNR, and Gaussian regularizer
-  equations with fail-closed pinned fused-SSIM and TorchMetrics AlexNet
-  adapters;
-- a fail-closed single-MI300X renderer adapter that pins the AMD gsplat wheel,
-  native provider, call ABI, tensor layouts, and differentiable packed metadata;
-- replayable MI300X admission with exact stopped-process identities, separate
-  contention-tolerant shared-quality/strict exclusive-performance modes, and
-  dynamic KFD-arrival detection;
-- hash-closed local resume checkpoints using restricted tensor-state loading,
-  kept explicitly separate from distributable AssetBundles;
-- portable asset, asset-independent camera-trajectory, and bound camera-path schemas;
-- an explicit, load-tested Viewer-interoperability profile plus a documented
-  CPU-only hand-off to the sister project's fail-closed converter;
-- project-owned analytic geometry tests;
-- a hash-pinned MI300X renderer and fused-SSIM source-build recipe.
-
-The exact raw-image restrictions, tensor-cache layout, photometric conversion,
-role capabilities, and resumable sampler state are specified in
-[the public data contract](docs/DATA_CONTRACT.md).
-Portable asset inspection, hash-closed verification, and source-independent
-moving-camera rendering are specified in
-[the AssetBundle consumption guide](docs/ASSET_CONSUMPTION.md).
-The initialization tensor catalog, temporal equations, physical invariants,
-checkpoint boundary, and MI300X execution layout are specified in
-[the public model contract](docs/MODEL_CONTRACT.md).
-Loss equations, provider selection, and regularizer gradients are specified in
-[the public loss contract](docs/LOSS_CONTRACT.md).
-The exact raster inputs, fixed provider switches, output metadata, and MI300X
-runtime identity are specified in
-[the public renderer contract](docs/RENDERER_CONTRACT.md).
-The correspondence-provider identity, external-weight policy, geometry,
-provenance planes, and append-only point artifacts are specified in
-[the public RoMa point-provider contract](docs/ROMA_POINT_PROVIDER_CONTRACT.md).
-The fixed-capacity allocation, sampling equations, parameter construction,
-duration calibration, and receipt boundary are specified in
-[the public initialization-stage contract](docs/INITIALIZATION_STAGE.md).
-Training input closure, optimization ordering, MI300X synchronization policy,
-checkpoint/evaluation transactions, and AssetBundle handoff are specified in
-[the public training contract](docs/TRAINING_CONTRACT.md).
-Preregistered camera-role isolation, write-once PASS/FAIL evidence, and
-externally anchored receipt verification are specified in
-[the sealed quality evaluation guide](docs/SEALED_EVALUATION.md).
-Population-control scheduling, source capacity, 4D split equations, optimizer
-state mutation, and residual claim boundaries are specified in
-[the fixed-budget relocation contract](docs/RELOCATION_CONTRACT.md).
-The exact occupancy inputs, process-union rule, PID/start-time identity,
-full-stage KFD guard, privacy boundary, verdict, and replay semantics are specified in
-[the MI300X preflight contract](docs/MI300X_PREFLIGHT_CONTRACT.md).
-The generated smoke input and its rights/claim limits are specified in
-[the synthetic fixture guide](docs/SYNTHETIC_FIXTURE.md).
-
-For CPU-side contract development, use CPython 3.12:
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-.venv/bin/pytest \
-  tests/test_canonical.py \
-  tests/test_geometry.py \
-  tests/test_public_schema_registry.py \
-  tests/test_public_observation_audit.py \
-  tests/test_public_import_boundary.py
-```
-
-PyTorch is intentionally not a generic PyPI dependency. The verified MI300X
-build requires the ROCm-specific Torch wheel and native extensions described in
-[the MI300X runtime guide](docs/MI300X_RUNTIME_BUILD.md). Installing an
-arbitrary package named `torch` does not establish a supported GPU runtime.
-
-## Correctness boundary
-
-An observation is admitted only after both JSON-schema and semantic checks.
-In particular:
-
-- every image path must remain below the declared scene root after symlink
-  resolution;
-- optional byte verification checks SHA-256 and the encoded image header;
-- intrinsics must use the declared pixel domain and each extrinsic must be a
-  finite rigid world-to-camera transform;
-- per-camera timestamps must increase and synchronized frame spreads must stay
-  within the declared tolerance;
-- identical image bytes cannot occur across optimization and evaluation roles.
-
-`diagnostic` observations may be used for debugging. `sealed` observations may
-only be used for the preregistered final evaluation; they must not influence
-optimization, early stopping, hyperparameter choice, or checkpoint selection.
-
-## Source and claim boundary
-
-`tools/release/check_tracked_source.py` checks a clean committed tree for
-credentials, symlinks, submodules, oversized files, and training/data artifact
-types. Passing that check and the CPU suite establishes only the named source
-and contract behavior; it does not establish fresh installation, full
-training, MI300X performance, or scene-level quality.
-
-The source package contains no real-scene pixels, model weights, checkpoints,
-trained Gaussian assets, metrics, or videos. Those artifacts are not required
-to use or redistribute the Apache-2.0 source. Any separate quality,
-performance, or demo claim must identify the exact code, runtime, inputs, and
-rights evidence that supports it.
+See [third-party notices](THIRD_PARTY_NOTICES.md),
+[license and provenance](docs/LICENSE_AND_PROVENANCE.md), and the
+[release process](docs/RELEASE_PROCESS.md) before publishing derived artifacts
+or making quality/performance claims.
