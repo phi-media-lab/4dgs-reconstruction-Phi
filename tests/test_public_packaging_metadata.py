@@ -53,7 +53,7 @@ def test_public_project_metadata_is_narrow_and_does_not_resolve_generic_torch() 
     assert (ROOT / "MANIFEST.in").read_text(encoding="utf-8").splitlines() == [
         (
             "include CHANGELOG.md CITATION.cff CONTRIBUTING.md LICENSE NOTICE README.md "
-            "SECURITY.md THIRD_PARTY_NOTICES.md"
+            "README.zh-CN.md SECURITY.md THIRD_PARTY_NOTICES.md"
         ),
         "include sbom.cdx.json",
         "graft docs",
@@ -130,6 +130,7 @@ def test_user_facing_packaging_docs_have_no_internal_machine_dependency() -> Non
         ROOT / "CONTRIBUTING.md",
         ROOT / "NOTICE",
         ROOT / "README.md",
+        ROOT / "README.zh-CN.md",
         ROOT / "SECURITY.md",
         ROOT / "THIRD_PARTY_NOTICES.md",
         ROOT / ".github/workflows/release-check.yml",
@@ -178,6 +179,7 @@ def test_user_facing_local_markdown_links_resolve_inside_the_tree() -> None:
         ROOT / "CHANGELOG.md",
         ROOT / "CONTRIBUTING.md",
         ROOT / "README.md",
+        ROOT / "README.zh-CN.md",
         ROOT / "SECURITY.md",
         ROOT / "THIRD_PARTY_NOTICES.md",
         *sorted((ROOT / "docs").glob("*.md")),
@@ -195,6 +197,17 @@ def test_user_facing_local_markdown_links_resolve_inside_the_tree() -> None:
             target = (markdown.parent / relative).resolve()
             assert target.is_relative_to(root), (markdown, raw_target)
             assert target.exists(), (markdown, raw_target)
+
+
+def test_bilingual_readmes_cross_link_and_use_portable_math() -> None:
+    english = (ROOT / "README.md").read_text(encoding="utf-8")
+    chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+
+    assert "[简体中文](README.zh-CN.md)" in english
+    assert "[English](README.md)" in chinese
+    for readme in (english, chinese):
+        assert r"\operatorname" not in readme
+        assert r"\frac{a_i(t)}{1+\exp(-o_i)}" in readme
 
 
 def test_charge_docs_pin_current_attribution_and_disclose_prepare_size() -> None:

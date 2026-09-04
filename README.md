@@ -1,5 +1,7 @@
 # Pixel4DGS
 
+[简体中文](README.zh-CN.md)
+
 [![CPU source and package checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml)
 [![Release archive checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml)
 
@@ -128,7 +130,7 @@ a_i(t)=p_i+(1-p_i)g_i(t)
 $$
 
 $$
-\alpha_i(t)=\operatorname{sigmoid}(o_i)\,a_i(t)
+\alpha_i(t)=\frac{a_i(t)}{1+\exp(-o_i)}
 $$
 
 Time therefore changes position and activation through named state; it is not
