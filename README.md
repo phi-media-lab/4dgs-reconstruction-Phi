@@ -2,8 +2,8 @@
 
 [简体中文](README.zh-CN.md)
 
-[![CPU source and package checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml)
-[![Release archive checks](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml)
+[![CPU source and package checks](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/cpu-ci.yml)
+[![Release archive checks](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml)
 
 Pixel4DGS is an architecture-first, trainable pixel-to-4D-Gaussian
 reconstruction system developed by Phi Media Lab in collaboration with AMD.

@@ -23,8 +23,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/phi-media-lab/4dgs-reconstruction-phi"
-Issues = "https://github.com/phi-media-lab/4dgs-reconstruction-phi/issues"
+Repository = "https://github.com/phi-media-lab/4dgs-reconstruction-Phi"
+Issues = "https://github.com/phi-media-lab/4dgs-reconstruction-Phi/issues"
 
 [project.scripts]
 p2g = "p2g.cli:main"

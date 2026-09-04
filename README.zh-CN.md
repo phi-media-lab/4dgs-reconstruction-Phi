@@ -2,8 +2,8 @@
 
 [English](README.md)
 
-[![CPU 源码与包检查](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/cpu-ci.yml)
-[![发行归档检查](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-phi/actions/workflows/release-check.yml)
+[![CPU 源码与包检查](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/cpu-ci.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/cpu-ci.yml)
+[![发行归档检查](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml/badge.svg)](https://github.com/phi-media-lab/4dgs-reconstruction-Phi/actions/workflows/release-check.yml)
 
 Pixel4DGS 是一个架构优先、可训练的 pixel-to-4D-Gaussian 重建系统，由
 Phi Media Lab 与 AMD 合作开发。它把同步、标定的多相机 RGB 视频转换为显式的

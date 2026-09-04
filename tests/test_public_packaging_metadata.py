@@ -28,8 +28,8 @@ def test_public_project_metadata_is_narrow_and_does_not_resolve_generic_torch() 
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
     assert project["urls"] == {
-        "Repository": "https://github.com/phi-media-lab/4dgs-reconstruction-phi",
-        "Issues": "https://github.com/phi-media-lab/4dgs-reconstruction-phi/issues",
+        "Repository": "https://github.com/phi-media-lab/4dgs-reconstruction-Phi",
+        "Issues": "https://github.com/phi-media-lab/4dgs-reconstruction-Phi/issues",
     }
     assert project["scripts"] == {"p2g": "p2g.cli:main"}
     dependencies = project["dependencies"]
